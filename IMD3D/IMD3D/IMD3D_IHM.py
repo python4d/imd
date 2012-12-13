@@ -86,6 +86,7 @@ class wxMainFrame ( wx.Frame ):
 		bSizerContentPLAST3D_visu = wx.BoxSizer( wx.HORIZONTAL )
 		
 		self.m_splitter2 = wx.SplitterWindow( self.VISUALISATION_VTK, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
+		self.m_splitter2.SetSashGravity( 0.1 )
 		self.m_splitter2.Bind( wx.EVT_IDLE, self.m_splitter2OnIdle )
 		self.m_splitter2.SetMinimumPaneSize( 100 )
 		
@@ -94,7 +95,7 @@ class wxMainFrame ( wx.Frame ):
 		
 		self.m_staticText2 = wx.StaticText( self.m_panel10, wx.ID_ANY, u"Fichiers VTK", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
 		self.m_staticText2.Wrap( -1 )
-		bSizer3.Add( self.m_staticText2, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+		bSizer3.Add( self.m_staticText2, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND, 5 )
 		
 		m_listBox_vtkChoices = [ u"test", u"de", u"la liste" ]
 		self.m_listBox_vtk = wx.ListBox( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,-1 ), m_listBox_vtkChoices, wx.LB_HSCROLL|wx.VSCROLL )
@@ -123,7 +124,7 @@ class wxMainFrame ( wx.Frame ):
 		bSizer6.Add( self.m_staticText4, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.m_slider_vtk = wx.Slider( self.m_panel_OpenGL, wx.ID_ANY, 75, 50, 100, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer6.Add( self.m_slider_vtk, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		bSizer6.Add( self.m_slider_vtk, 3, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		self.m_staticline4 = wx.StaticLine( self.m_panel_OpenGL, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
 		bSizer6.Add( self.m_staticline4, 0, wx.EXPAND |wx.ALL, 5 )
@@ -133,7 +134,7 @@ class wxMainFrame ( wx.Frame ):
 		bSizer6.Add( self.m_staticText42, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
 		self.m_slider_vtk_color = wx.Slider( self.m_panel_OpenGL, wx.ID_ANY, 512, 0, 512, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL )
-		bSizer6.Add( self.m_slider_vtk_color, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		bSizer6.Add( self.m_slider_vtk_color, 3, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		self.m_staticline41 = wx.StaticLine( self.m_panel_OpenGL, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
 		bSizer6.Add( self.m_staticline41, 0, wx.EXPAND |wx.ALL, 5 )
@@ -147,7 +148,7 @@ class wxMainFrame ( wx.Frame ):
 		self.m_choice_vtk_color.SetSelection( 0 )
 		self.m_choice_vtk_color.SetFont( wx.Font( 8, 70, 90, 90, False, wx.EmptyString ) )
 		
-		bSizer6.Add( self.m_choice_vtk_color, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+		bSizer6.Add( self.m_choice_vtk_color, 2, wx.ALIGN_CENTER|wx.ALL, 5 )
 		
 		self.m_staticline411 = wx.StaticLine( self.m_panel_OpenGL, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
 		bSizer6.Add( self.m_staticline411, 0, wx.EXPAND |wx.ALL, 5 )
@@ -277,6 +278,7 @@ class wxMainFrame ( wx.Frame ):
 		self.Centre( wx.BOTH )
 		
 		# Connect Events
+		self.Bind( wx.EVT_CLOSE, self.OnClose_Frame )
 		self.m_notebook.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnNotebookPageChanged )
 		self.m_dirPicker_PLAST3D.Bind( wx.EVT_DIRPICKER_CHANGED, self.OnDirChanged_PLAST3D )
 		self.m_listBox_vtk.Bind( wx.EVT_LISTBOX, self.OnListBox_vtk )
@@ -292,6 +294,9 @@ class wxMainFrame ( wx.Frame ):
 	
 	
 	# Virtual event handlers, overide them in your derived class
+	def OnClose_Frame( self, event ):
+		event.Skip()
+	
 	def OnNotebookPageChanged( self, event ):
 		event.Skip()
 	

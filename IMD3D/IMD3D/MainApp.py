@@ -56,8 +56,12 @@ class cMainFrame(wxMainFrame):
       self.m_textCtrl_console.SetDefaultStyle(wx.TextAttr(wx.BLACK))
     self.m_textCtrl_console.AppendText("\nBienvenue sur l'interface OpenGL/Python du projet IMD3D\n")
     self.Show() 
-    wx.SplashScreen(wx.Bitmap("./images/image10.png"), wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT,10000, None, -1,style=wx.BORDER_NONE).Show()
-  def OnClose_Frame( self, event ): pass
+    wx.SplashScreen(wx.Bitmap("./images/image10.png"), wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT,2000, None, -1,style=wx.BORDER_NONE).Show()
+  
+  
+  def OnClose_Frame( self, event ): 
+    wx.SplashScreen(wx.Bitmap("./images/image10.png"), wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT,2000, None, -1,style=wx.BORDER_NONE).Show()
+    event.Skip()
       
 
     
