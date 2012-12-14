@@ -35,7 +35,7 @@ class ProjetIMD(object):
     projet["root"]["Nom du Projet"]="*sans titre"
     projet["root"]["Dossier du Projet"]=".sans titre"
     projet["root"]["dir"]={}
-    projet["root"]["dir"]["plast3d"]=r".\vtk"
+    projet["root"]["dir"]["plast3d"]=r".\plast3d"
     projet["root"]["dir"]["anna"]=r""
     projet["root"]["fichier STL moule"]=r""
     projet["root"]["fichier STL film"]=r""
@@ -58,48 +58,57 @@ class ProjetIMD(object):
     
   def OnMenuSelection_Projet_New(self, event):
     if self.projet["root"]["Nom du Projet"][0]=="*":
-      self._DialogSaveFile()
-    else:
+    #Demande si l'on veut sauvegarder le fichier en cours avant de créer un nouveau fichier
+      _dlg=wx.MessageDialog(parent=None, message="Voulez-vous Sauvegarder les données projets ?",  caption="Sauvegarde", style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
+      if _dlg.ShowModal()==wx.ID_OK:
+        self._DialogSaveFile()
+      else:
+        pass
+      _dlg.Destroy()
       self.projet=self._ProjetVide()
       self.Projet2IHM(self.projet,self.frame)
-    
+
+
+
+
+
   def _DialogSaveFile(self):
     """
     Create and show the Save FileDialog
     """
-    dlg = wx.FileDialog(
-        self.frame, message="Enregistrer le fichier projet sous ...", 
-        defaultDir=self.projet["root"]["Dossier du Projet"]+r"\..", 
-        defaultFile="", wildcard=ProjetIMD.wildcard, style=wx.SAVE
-        )
-    if dlg.ShowModal() == wx.ID_OK:
-        path = dlg.GetPath()
-        print "You chose the following filename: %s" % path
-    dlg.Destroy()
+    _dlg = wx.FileDialog(self.frame, message="Enregistrer le fichier projet sous ...", 
+                        defaultDir=self.projet["root"]["Dossier du Projet"]+r"\..", 
+                        defaultFile="", wildcard=ProjetIMD.wildcard, style=wx.SAVE)
+    if _dlg.ShowModal() == wx.ID_OK:
+      _path = _dlg.GetPath()
+      print "You chose the following filename: %s" % _path
+      return _path
+    else:
+      return -1
+    _dlg.Destroy()
       
   def _DialogOpenFile(self):
-      """
-      Create and show the Open FileDialog
-      """
-      dlg = wx.FileDialog(
-          self.frame, message="Choisir un projet IMD",
-          defaultDir=self.currentDirectory, 
-          defaultFile="",
-          wildcard=ProjetIMD.wildcard,
-          style=wx.OPEN |  wx.CHANGE_DIR
-          )
-      if dlg.ShowModal() == wx.ID_OK:
-          paths = dlg.GetPaths()
-          print "You chose the following file(s):"
-          for path in paths:
-              print path
-      dlg.Destroy()    
+    """
+    Create and show the Open FileDialog
+    """
+    _dlg = wx.FileDialog(self.frame, message="Choisir un projet IMD",
+                        defaultDir=self.currentDirectory, 
+                        defaultFile="",
+                        wildcard=ProjetIMD.wildcard,
+                        style=wx.OPEN |  wx.CHANGE_DIR)
+    if _dlg.ShowModal() == wx.ID_OK:
+      _path = _dlg.GetPaths()
+      print "You chose the following file(s):", _path
+      return _path
+    else:
+      return -1
+    _dlg.Destroy()    
     
     
     
 """    
     import json
-    jj=json.dumps(project,indent=4, separators=(',', ': '),encoding="iso-8859-15")
+    jj=json.dumps(project,indent=4, separators=(',', ': '),encoding="utf-8")
     with open("toto.json",mode="w") as f:
       f.write(jj)
     with open("toto.json","r") as g:

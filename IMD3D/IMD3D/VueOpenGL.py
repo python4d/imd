@@ -56,7 +56,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     self.Bind(wx.EVT_KEY_DOWN, self.mAppuiTouche)
     self.Bind(wx.EVT_MOUSE_EVENTS, self.mEvenementSouris)
     
-    self.frame=self.TopLevelParent
+    self._frame=self.TopLevelParent
     self.bd=0
     self.flag_reset_view=0
     self.flag_new_set_of_points=0
@@ -150,24 +150,24 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     if not self.q.empty()==True:
       [self.points,self.cell_data],_flag_cache,_filein=self.q.get() #on récupère les points, on récupère le flag pour savoir si les points viennent du cache ou pas
       if _flag_cache==0:# si les données ne viennent pas du cache il faut les mettre
-        self.frame.cache_liste_points[_filein]=[self.points,self.cell_data]
+        self._frame.cache_liste_points[_filein]=[self.points,self.cell_data]
       self.flag_new_set_of_points-=1
-      self.frame.m_textCtrl_console.AppendText( "Niveau du Cache-Données=%d\n" % self.flag_new_set_of_points)
+      self._frame.m_textCtrl_console.AppendText(".")
       self.mean,self.max,self.min=Common.MeanMaxMin(self.points) 
       #Récupération des Map de couleur dans les cell_data, mis à jour de la liste de choix couleur
-      self.frame.m_choice_vtk_color.Clear()
-      self.frame.m_choice_vtk_color.Append("Z-Hauteur")
+      self._frame.m_choice_vtk_color.Clear()
+      self._frame.m_choice_vtk_color.Append("Z-Hauteur")
       for _i in self.cell_data:
         self.cd_max[_i],self.cd_min[_i]=min(self.cell_data[_i]),max(self.cell_data[_i])
-        self.frame.m_choice_vtk_color.Append(_i)
-      self.frame.m_choice_vtk_color.SetSelection(0)
+        self._frame.m_choice_vtk_color.Append(_i)
+      self._frame.m_choice_vtk_color.SetSelection(0)
       self.mCacheColor()
       self.mCreerDisplayList()
     #Création de tuple de couleur HSV
     if not self.flag_color_change==0:
       #cas de changement de saturation/couleur (cf NoteBook.OnScroll_slider_vtk) ou
-      HSV_tuples = [(x*1.0/self.N, float(self.frame.m_slider_vtk.GetValue())/100.0, float(self.frame.m_slider_vtk.GetValue())/100.0) for x in range(self.N)]
-      HSV_tuples = Common.RotateList(HSV_tuples, self.frame.m_slider_vtk_color.GetValue())
+      HSV_tuples = [(x*1.0/self.N, float(self._frame.m_slider_vtk.GetValue())/100.0, float(self._frame.m_slider_vtk.GetValue())/100.0) for x in range(self.N)]
+      HSV_tuples = Common.RotateList(HSV_tuples, self._frame.m_slider_vtk_color.GetValue())
       self.RGB_tuples = map(lambda x: colorsys.hsv_to_rgb(*x), HSV_tuples)
       self.mCacheColor()
       self.flag_color_change=0

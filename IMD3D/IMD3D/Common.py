@@ -9,17 +9,21 @@ Toutes ces fonctions sont "a priori" indépendants de l'IHM
 
 import os
 
-#retourne la liste des fichiers *.VTK (path complet) d'un directory et sous directory
-def ListVtkFiles(chemin=r"."):
+
+            
+
+def ListVtkFiles(chemin=r".",seek_level=2):
   """
-  Retourne Tous les fichiers VTK du dossier et sous dossier désigné par chemin
+  Retourne Tous les fichiers VTK du dossier et sous dossier de niveau seek_level  désigné par chemin.
+  @param seek_level: seek_level niveau des sous dossier à explorer
+  @param chemin: Chemin à explorer
   """
   files_list=[]
   if os.access(chemin, os.R_OK): 
-    for r,_,f in os.walk(chemin):
-          for files in f:
-              if files.endswith(".vtk"):
-                files_list.append( os.path.join(r,files))
+    for _r,_,_f in walklevel(chemin,seek_level):
+      for files in _f:
+          if files.endswith(".vtk"):
+            files_list.append( os.path.join(_r,files))
     return files_list
   else:
     return -1
@@ -41,6 +45,26 @@ def MeanMaxMin(points):
   _min=[min(list_x),min(list_y),min(list_z)]    
   return _mean,_max,_min
 
-#Rotation d'une liste utiliser entre autre pour changer de couleur (VisuOpenGL)
+
 def RotateList(l,n):
-    return l[n:] + l[:n]
+  """
+  Rotation d'une liste utiliser entre autre pour changer de couleur (VisuOpenGL)
+  @param l: list
+  @param n: nombre de rotation, peut etre positif ou négatif
+  """
+  return l[n:] + l[:n]
+  
+
+def walklevel(some_dir, level=1):
+  """
+  It works just like os.walk, but you can pass it a level parameter that indicates how deep the recursion will go.
+  @see: http://stackoverflow.com/questions/229186/os-walk-without-digging-into-directories-below
+  """
+  some_dir = some_dir.rstrip(os.path.sep)
+  assert os.path.isdir(some_dir)
+  num_sep = some_dir.count(os.path.sep)
+  for root, dirs, files in os.walk(some_dir):
+      yield root, dirs, files
+      num_sep_this = root.count(os.path.sep)
+      if num_sep + level <= num_sep_this:
+          del dirs[:]  
