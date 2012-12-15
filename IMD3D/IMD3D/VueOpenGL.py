@@ -84,7 +84,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     
   def OnSize(self, event):
     size = self.size = self.GetClientSize()
-    if self.GetContext() and self.GrandParent.GrandParent.GetSelection()==1 and not size[0]==0 and not size[1]==0: #vérifie que l'on est bien dans l'onglet visualisation 3D sinon warning wx canvas
+    if self.GetContext() and self.GrandParent.GrandParent.GetSelection()==2 and not size[0]==0 and not size[1]==0: #vérifie que l'on est bien dans l'onglet visualisation 3D sinon warning wx canvas
         self.SetCurrent()
         gl.glViewport(0, 0, size.width, size.height)
     event.Skip()

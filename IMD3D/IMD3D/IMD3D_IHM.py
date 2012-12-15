@@ -33,7 +33,7 @@ class wxMainFrame ( wx.Frame ):
 		
 		bSizer10 = wx.BoxSizer( wx.VERTICAL )
 		
-		self.m_notebook = wx.Notebook( self.m_panel7, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0, u"m_notebook" )
+		self.m_notebook = wx.Notebook( self.m_panel7, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0, u"m_notebook_principal" )
 		self.m_notebook.SetBackgroundColour( wx.Colour( 179, 255, 179 ) )
 		
 		self.Plast3D_IN = wx.Panel( self.m_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0, u"m_panel_Plast3D_IN" )
@@ -69,17 +69,10 @@ class wxMainFrame ( wx.Frame ):
 		self.m_panel4.SetSizer( bSizer7 )
 		self.m_panel4.Layout()
 		bSizer7.Fit( self.m_panel4 )
-		self.m_notebook_Projet.AddPage( self.m_panel4, u"PLAST3D Launcher", True )
+		self.m_notebook_Projet.AddPage( self.m_panel4, u"Répertoires et Importations", True )
 		self.m_panel5 = wx.Panel( self.m_notebook_Projet, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		self.m_notebook_Projet.AddPage( self.m_panel5, u"Paramêtres Procédés", False )
-		
-		bSizer4.Add( self.m_notebook_Projet, 1, wx.EXPAND |wx.ALL, 5 )
-		
-		self.Plast3D_IN.SetSizer( bSizer4 )
-		self.Plast3D_IN.Layout()
-		bSizer4.Fit( self.Plast3D_IN )
-		self.m_notebook.AddPage( self.Plast3D_IN, u"PLAST3D - Données Projet (entrées)", True )
-		self.VISUALISATION_VTK = wx.Panel( self.m_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, u"plast3d_visualisation" )
+		self.VISUALISATION_VTK = wx.Panel( self.m_notebook_Projet, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, u"plast3d_visualisation" )
 		self.VISUALISATION_VTK.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 90, False, wx.EmptyString ) )
 		self.VISUALISATION_VTK.SetBackgroundColour( wx.Colour( 187, 255, 187 ) )
 		
@@ -167,7 +160,14 @@ class wxMainFrame ( wx.Frame ):
 		self.VISUALISATION_VTK.SetSizer( bSizerContentPLAST3D_visu )
 		self.VISUALISATION_VTK.Layout()
 		bSizerContentPLAST3D_visu.Fit( self.VISUALISATION_VTK )
-		self.m_notebook.AddPage( self.VISUALISATION_VTK, u"PLAST3D - *.vtk (sorties)", False )
+		self.m_notebook_Projet.AddPage( self.VISUALISATION_VTK, u"PLAST3D - *.vtk (sorties)", False )
+		
+		bSizer4.Add( self.m_notebook_Projet, 1, wx.EXPAND |wx.ALL, 5 )
+		
+		self.Plast3D_IN.SetSizer( bSizer4 )
+		self.Plast3D_IN.Layout()
+		bSizer4.Fit( self.Plast3D_IN )
+		self.m_notebook.AddPage( self.Plast3D_IN, u"PLAST3D - process plast3d.exe", True )
 		self.ANNA_IN = wx.Panel( self.m_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		self.ANNA_IN.SetBackgroundColour( wx.Colour( 170, 255, 255 ) )
 		
@@ -191,7 +191,7 @@ class wxMainFrame ( wx.Frame ):
 		self.ANNA_IN.SetSizer( bSizer8 )
 		self.ANNA_IN.Layout()
 		bSizer8.Fit( self.ANNA_IN )
-		self.m_notebook.AddPage( self.ANNA_IN, u"ANNA - Viewer", False )
+		self.m_notebook.AddPage( self.ANNA_IN, u"ANNA - process viewer.exe", False )
 		self.MATERIAUX = wx.Panel( self.m_notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		self.MATERIAUX.SetBackgroundColour( wx.Colour( 255, 223, 223 ) )
 		

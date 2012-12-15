@@ -16,7 +16,7 @@ import wx,time
 from IMD3D_IHM import wxMainFrame
 import NoteBook
 import Timer
-import Projet
+import Projet,Common
 
 __version__='1.0A'
 
@@ -55,6 +55,9 @@ class cMainFrame(wxMainFrame):
       self.m_textCtrl_console.AppendText("\n(!!!Attention vous êtes en MODE Debug les chargements des fichiers et animations ne sont pas optimisés !!!)")
       self.m_textCtrl_console.SetDefaultStyle(wx.TextAttr(wx.BLACK))
     self.m_textCtrl_console.AppendText("\nBienvenue sur l'interface OpenGL/Python du projet IMD3D\n")
+    if self.debug==True:
+      sys.stdout = Common.RedirectOutput("out",self.m_textCtrl_console)
+    sys.stderr = Common.RedirectOutput("err",self.m_textCtrl_console) 
     self.Show() 
     wx.SplashScreen(wx.Bitmap("./images/image10.png"), wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT,2000, None, -1,style=wx.BORDER_NONE).Show()
   
@@ -84,12 +87,16 @@ class cMainApp(wx.App):
     self.oMainFrame=cMainFrame(debug=debug)
 
 
-#
-#Explication de l'utilisation du multiprocessing sous python:
-#http://docs.python.org/2/library/multiprocessing.html#multiprocessing.freeze_support
-#
+
 from multiprocessing import Process, freeze_support
 class cIMD3D(object):
+  """
+  Class de base de l'application IMD3D
+  @param debug: si "False" permet de lancer de lancer des process child (utilisez dans Notebook)
+                si "True" n'utilise qu'un process principal et des threads
+  @note: Explication de l'utilisation du multiprocessing sous python - http://docs.python.org/2/library/multiprocessing.html#multiprocessing.freeze_support
+  @note: Limitation dans le debug avec Pydev si debug="False" - http://stackoverflow.com/questions/6724149/python-how-to-debug-multiprocess-using-eclipsepydev
+  """
   def __init__(self,debug=True):
     self.debug=debug
     

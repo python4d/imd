@@ -56,19 +56,26 @@ class ProjetIMD(object):
     frame.m_dirPicker_PLAST3D.SetPath(projet["root"]["dir"]["plast3d"])
     frame.m_menuItem_Projet_Save.Enable(self.save)
     
+    
+
   def OnMenuSelection_Projet_New(self, event):
     if self.projet["root"]["Nom du Projet"][0]=="*":
     #Demande si l'on veut sauvegarder le fichier en cours avant de créer un nouveau fichier
-      _dlg=wx.MessageDialog(parent=None, message="Voulez-vous Sauvegarder les données projets ?",  caption="Sauvegarde", style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
-      if _dlg.ShowModal()==wx.ID_OK:
-        self._DialogSaveFile()
-      else:
-        pass
+      _dlg=wx.MessageDialog(parent=None, message="Voulez-vous Sauvegarder les données projets ?",  caption="Sauvegarde", style=wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
+      _reponse=_dlg.ShowModal()
+      
+      if _reponse==wx.ID_YES:
+        self.OnMenuSelection_Projet_Save(event)
+
+      elif _reponse==wx.ID_NO:
+        self.projet=self._ProjetVide()
+        self.Projet2IHM(self.projet,self.frame)
+        
       _dlg.Destroy()
-      self.projet=self._ProjetVide()
-      self.Projet2IHM(self.projet,self.frame)
 
 
+  def OnMenuSelection_Projet_Save(self, event):
+    _path=self._DialogSaveFile()
 
 
 

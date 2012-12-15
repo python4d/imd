@@ -7,10 +7,7 @@ Toutes ces fonctions sont "a priori" indépendants de l'IHM
 @author: Python4D/damien
 '''
 
-import os
-
-
-            
+import os,sys
 
 def ListVtkFiles(chemin=r".",seek_level=2):
   """
@@ -68,3 +65,20 @@ def walklevel(some_dir, level=1):
       num_sep_this = root.count(os.path.sep)
       if num_sep + level <= num_sep_this:
           del dirs[:]  
+          
+class RedirectOutput(object): 
+  """
+  Class permettant de définir l'action "write" nécessaire à l'objet sys.sdtout ou stderr
+  @param kind: string comportant le stype de sortie redirigée, soit "err" ou "out"
+  @param log: object ctrlText pour injecter les message dans la console IHM
+  """
+  def __init__(self, kind, log): 
+    self.log = log 
+    self.kind = kind
+  def write(self, string): 
+    self.log.AppendText(string) 
+    #on réinjecte le message dans l'objet de base protégé sys.__stderr__ ou sys.__stdout__
+    if self.kind=="err": sys.__stderr__.write(string)
+    if self.kind=="out": sys.__stdout__.write(string)
+
+          
