@@ -6,9 +6,9 @@ Regroupe toutes les fonctions concernant le Panel NoteBook
 Ne sert que pour alléger le fichier MainApp
 @author: Python4D
 '''
-import Common
-import wx
-import vtk2obj
+import Common,vtk2obj,Projet
+import wx,os
+
 
 
 def OnNotebookPageChanged(self,event):
@@ -55,27 +55,27 @@ def RefreshOnListBox_vtk(self,chemin='.'):
 # Fonctions concernant l'onglet données du projet (parametres/valeurs)
 #
 def OnDirChanged_PLAST3D( self, event ):
-  _dir=self.m_dirPicker_PLAST3D.GetPath()
-  if not self.m_dirPicker_PLAST3D.CheckPath(_dir): #a priori le test n'est pas nécessaire puisque l'on a mis le check automatique dans l'IHM DirPicker
-      dlg = wx.MessageDialog(None, "Directory inexistant!" ,"Warning dans OnDirChanged_PLAST3D!",wx.OK|wx.ICON_INFORMATION)
-      dlg.ShowModal()
-      dlg.Destroy() 
-      self.m_dirPicker_PLAST3D.SetPath(self.old_dir_Plast3D)                
+  if not self.m_dirPicker_PLAST3D.GetTextCtrl().FindFocus()==self.m_dirPicker_PLAST3D.GetTextCtrl():
+    #cas où l'on a changé le directory via le bouton et non pas en tapant directement le chemin
+    OnKillFocus_DIR_PLAST3D(self, event)
   event.Skip()
   
 def OnKillFocus_DIR_PLAST3D(self, event):
   print "KillFocus-event OnChangeText_DIR_PLAST3D \n"
   _dir=self.m_dirPicker_PLAST3D.GetTextCtrl().GetValue()
-  self.m_dirPicker_PLAST3D.SetPath(_dir) 
-  if  RefreshOnListBox_vtk(self,_dir)==-1 :
-    dlg = wx.MessageDialog(None, "Répertoire sans vtk !" ,"Warning dans OnKillFocus_DIR_PLAST3D",wx.OK|wx.ICON_INFORMATION)
-    dlg.ShowModal()
-    dlg.Destroy() 
-    self.m_dirPicker_PLAST3D.SetPath(self.old_dir_Plast3D)   
+  _plast3d=os.path.join(_dir,"plast3d.exe")
+  if not self.oProjetIMD.ValiderDirFile(_plast3d)==0:
+    self.m_dirPicker_PLAST3D.SetPath(self.oProjetIMD.projet["root"]["dir"]["plast3d"])   
+  else:    
+    self.m_dirPicker_PLAST3D.SetPath(_dir) 
+    self.oProjetIMD.projet["root"]["dir"]["plast3d"]=_dir
+    self.oProjetIMD.not_saved=1
+    self.oProjetIMD.Projet2IHM(self.oProjetIMD.projet,self.oProjetIMD.frame)
+    RefreshOnListBox_vtk(self,_dir)
   event.Skip()  
+
 def OnSetFocus_DIR_PLAST3D( self, event ):
   print "SetFocus-event OnChangeText_DIR_PLAST3D \n"
-  self.old_dir_Plast3D=self.m_dirPicker_PLAST3D.GetTextCtrl().GetValue()
   event.Skip()       
 
 #

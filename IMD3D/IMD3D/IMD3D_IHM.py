@@ -8,6 +8,8 @@
 ###########################################################################
 
 import wx
+from wx.lib.intctrl import IntCtrl
+from floatctrl import FloatCtrl
 import VueOpenGL as ogl
 
 ###########################################################################
@@ -46,7 +48,7 @@ class wxMainFrame ( wx.Frame ):
 		self.m_notebook_Projet = wx.Notebook( self.Plast3D_IN, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_BOTTOM )
 		self.m_notebook_Projet.SetBackgroundColour( wx.Colour( 215, 255, 215 ) )
 		
-		self.m_panel4 = wx.Panel( self.m_notebook_Projet, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_panel4 = wx.Panel( self.m_notebook_Projet, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, u"Panel des Répertoires et Importations" )
 		self.m_panel4.SetBackgroundColour( wx.Colour( 210, 255, 210 ) )
 		
 		bSizer7 = wx.BoxSizer( wx.VERTICAL )
@@ -69,10 +71,23 @@ class wxMainFrame ( wx.Frame ):
 		self.m_panel4.SetSizer( bSizer7 )
 		self.m_panel4.Layout()
 		bSizer7.Fit( self.m_panel4 )
-		self.m_notebook_Projet.AddPage( self.m_panel4, u"Répertoires et Importations", True )
-		self.m_panel5 = wx.Panel( self.m_notebook_Projet, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		self.m_notebook_Projet.AddPage( self.m_panel5, u"Paramêtres Procédés", False )
-		self.VISUALISATION_VTK = wx.Panel( self.m_notebook_Projet, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, u"plast3d_visualisation" )
+		self.m_notebook_Projet.AddPage( self.m_panel4, u"Répertoires et Importations", False )
+		self.m_panel_param_plast = wx.Panel( self.m_notebook_Projet, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, u"Panel des Procédés" )
+		bSizer12 = wx.BoxSizer( wx.VERTICAL )
+		
+		
+		self.m_int_noeuds=IntCtrl(parent=self.m_panel_param_plast,id=wx.ID_ANY,value=0,min=-10,max=10)
+		bSizer12.Add( self.m_int_noeuds, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.m_float_noeuds=FloatCtrl(limited=True,parent=self.m_panel_param_plast,id=wx.ID_ANY,value=0,min=-9.5,max=11.10)
+		bSizer12.Add( self.m_float_noeuds, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		self.m_panel_param_plast.SetSizer( bSizer12 )
+		self.m_panel_param_plast.Layout()
+		bSizer12.Fit( self.m_panel_param_plast )
+		self.m_notebook_Projet.AddPage( self.m_panel_param_plast, u"Paramêtres Procédés", True )
+		self.VISUALISATION_VTK = wx.Panel( self.m_notebook_Projet, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, u"Panel des Sorties VTK" )
 		self.VISUALISATION_VTK.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 90, False, wx.EmptyString ) )
 		self.VISUALISATION_VTK.SetBackgroundColour( wx.Colour( 187, 255, 187 ) )
 		
@@ -160,7 +175,7 @@ class wxMainFrame ( wx.Frame ):
 		self.VISUALISATION_VTK.SetSizer( bSizerContentPLAST3D_visu )
 		self.VISUALISATION_VTK.Layout()
 		bSizerContentPLAST3D_visu.Fit( self.VISUALISATION_VTK )
-		self.m_notebook_Projet.AddPage( self.VISUALISATION_VTK, u"PLAST3D - *.vtk (sorties)", False )
+		self.m_notebook_Projet.AddPage( self.VISUALISATION_VTK, u"Sorties Fichiers *.vtk", False )
 		
 		bSizer4.Add( self.m_notebook_Projet, 1, wx.EXPAND |wx.ALL, 5 )
 		
@@ -272,6 +287,9 @@ class wxMainFrame ( wx.Frame ):
 		
 		self.m_menubar.Append( self.m_menu_materiau, u"Fichiers Matériaux" ) 
 		
+		self.m_menu3 = wx.Menu()
+		self.m_menubar.Append( self.m_menu3, u"?" ) 
+		
 		self.SetMenuBar( self.m_menubar )
 		
 		
@@ -288,6 +306,8 @@ class wxMainFrame ( wx.Frame ):
 		self.m_button_vtk.Bind( wx.EVT_BUTTON, self.OnButtonClick_vtk )
 		self.m_dirPicker_MATERIAU.Bind( wx.EVT_DIRPICKER_CHANGED, self.OnDirChanged_PLAST3D )
 		self.Bind( wx.EVT_MENU, self.OnMenuSelection_Projet_New, id = self.m_menuItem_Projet_New.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnMenuSelection_Projet_Save, id = self.m_menuItem_Projet_Save.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnMenuSelection_Projet_SaveAs, id = self.m_menuItem_Projet_SaveAs.GetId() )
 	
 	def __del__( self ):
 		pass
@@ -320,6 +340,12 @@ class wxMainFrame ( wx.Frame ):
 	
 	
 	def OnMenuSelection_Projet_New( self, event ):
+		event.Skip()
+	
+	def OnMenuSelection_Projet_Save( self, event ):
+		event.Skip()
+	
+	def OnMenuSelection_Projet_SaveAs( self, event ):
 		event.Skip()
 	
 	def m_splitter1OnIdle( self, event ):

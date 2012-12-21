@@ -13,6 +13,7 @@ import sys
 sys.path += ['.']
 ####################################################################################################################
 import wx,time
+from wx.lib.intctrl import IntCtrl
 from IMD3D_IHM import wxMainFrame
 import NoteBook
 import Timer
@@ -30,7 +31,7 @@ class cMainFrame(wxMainFrame):
     self.oProjetIMD=Projet.ProjetIMD(self)
   # Initialiser les différents Timer
     self.oTimer=Timer.cTimer(self)
-    
+
   #Initialisation des éléments IHM
     if (NoteBook.RefreshOnListBox_vtk(self,self.oProjetIMD.projet["root"]["dir"]["plast3d"])==-1):
       print >>sys.stderr,"Erreur: Répertoire ""vtk"" de base non présent sous le dossier IMD3D."
@@ -47,7 +48,6 @@ class cMainFrame(wxMainFrame):
     #On opte pour attacher l'événement KILL_FOCUS et SET_FOCUS afi de vérifier si le directory entré "à la main" est juste
     self.m_dirPicker_PLAST3D.GetTextCtrl().Bind( wx.EVT_KILL_FOCUS, self.OnKillFocus_DIR_PLAST3D )
     self.m_dirPicker_PLAST3D.GetTextCtrl().Bind( wx.EVT_SET_FOCUS, self.OnSetFocus_DIR_PLAST3D )
-    self.old_dir_Plast3D=self.oProjetIMD.projet["root"]["dir"]["plast3d"]
   #Message dans la console
     self.m_textCtrl_console.AppendText("(c) Dynamic3D/Python4D - 01/2013 - Version %s"%__version__)
     if self.debug==True:
@@ -80,7 +80,9 @@ class cMainFrame(wxMainFrame):
   def OnChoice_vtk_color(self, event):NoteBook.OnChoice_vtk_color(self, event)
   
   def OnMenuSelection_Projet_New(self, event):self.oProjetIMD.OnMenuSelection_Projet_New(event)
-
+  def OnMenuSelection_Projet_SaveAs(self, event):self.oProjetIMD.OnMenuSelection_Projet_Save(event,True)
+  def OnMenuSelection_Projet_Save(self, event):self.oProjetIMD.OnMenuSelection_Projet_Save(event,False)
+    
 class cMainApp(wx.App):
   def __init__(self,debug=True):
     wx.App.__init__(self,redirect=False)

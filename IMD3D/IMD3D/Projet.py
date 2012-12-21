@@ -8,7 +8,8 @@ Définition de la Class Projet permettant de créer l'ensemble de actions liées au
 -Gestion des conversions Projet => .DAT Plast
 @author: Python4D
 '''
-import os,wx
+import os,shutil,wx
+import json
 from IMD3D import __version__
 
 class ProjetIMD(object):
@@ -20,19 +21,21 @@ class ProjetIMD(object):
   wildcard="IMD Projet (*.imd)|*.imd"
   def __init__(self,frame):
     self.frame=frame
-    self.save=1 #flag pour savoir si le projet a été sauvegardé
     self.projet=self._ProjetVide()
+    self.ProjetPath=os.getcwdu()
     self.Projet2IHM(self.projet,self.frame)
+
     
   def _ProjetVide(self):
     """
     Crée un projet vide renvoie un dict avec le minimum d'info
     Structure des données minimum du JSON
     """  
+    self.not_saved=1 #flag pour savoir si le projet a été sauvegardé
     projet={}
     projet["Version des fichiers projet"]=__version__
     projet["root"]={}
-    projet["root"]["Nom du Projet"]="*sans titre"
+    projet["root"]["Nom du Projet"]="sans titre"
     projet["root"]["Dossier du Projet"]=".sans titre"
     projet["root"]["dir"]={}
     projet["root"]["dir"]["plast3d"]=r".\plast3d"
@@ -51,31 +54,72 @@ class ProjetIMD(object):
     return(projet)
   
   def Projet2IHM(self,projet,frame):
-    frame.Title=frame.Title.split(' - ')[0]+" - "+projet["root"]["Nom du Projet"]
+    _ns='*' if self.not_saved==1 else ''
+    frame.Title=frame.Title.split(' - ')[0]+" - "+_ns+self.ProjetPath+"\\"+projet["root"]["Nom du Projet"]
+    frame.m_menuItem_Projet_Save.Enable(self.not_saved)
     #directory plast
     frame.m_dirPicker_PLAST3D.SetPath(projet["root"]["dir"]["plast3d"])
-    frame.m_menuItem_Projet_Save.Enable(self.save)
+
     
     
 
   def OnMenuSelection_Projet_New(self, event):
-    if self.projet["root"]["Nom du Projet"][0]=="*":
+    """
+    Créer un nouveau projet: nouveaux paramêtres, nouveau dossier fichiers, etc...
+    Vérifier que ce projet a été précédemment sauvegardé
+    """
+    _flag=1
+    if self.not_saved:
+      _flag=0
     #Demande si l'on veut sauvegarder le fichier en cours avant de créer un nouveau fichier
       _dlg=wx.MessageDialog(parent=None, message="Voulez-vous Sauvegarder les données projets ?",  caption="Sauvegarde", style=wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
       _reponse=_dlg.ShowModal()
       
       if _reponse==wx.ID_YES:
-        self.OnMenuSelection_Projet_Save(event)
+        if not self.OnMenuSelection_Projet_Save(event)==-1:
+          _flag=1
 
       elif _reponse==wx.ID_NO:
-        self.projet=self._ProjetVide()
-        self.Projet2IHM(self.projet,self.frame)
+        _flag=1
         
       _dlg.Destroy()
+      
+    if _flag==1:
+      self.projet=self._ProjetVide()
+      self.Projet2IHM(self.projet,self.frame)
 
 
-  def OnMenuSelection_Projet_Save(self, event):
-    _path=self._DialogSaveFile()
+  def OnMenuSelection_Projet_Save(self, event,saveas):
+
+    if self.projet["root"]["Nom du Projet"]=="sans titre" or saveas:    
+      _path=self._DialogSaveFile()
+      
+      while not _path==-1:
+        try :
+          with open(_path) as _f: 
+            _dlg = wx.MessageDialog(None, "Le Fichier/Dossier Projet %s existe déjà ! \nVoulez-vous l'écraser?" % _path.split('\x5C')[-1] ,"Warning dans OnMenuSelection_Projet_Save", style=wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
+            _reponse=_dlg.ShowModal()
+            
+            if _reponse==wx.ID_YES:
+              break
+
+            elif _reponse==wx.ID_NO:
+              _dlg.Destroy()               
+              _path=self._DialogSaveFile()
+              
+            elif _reponse==wx.ID_CANCEL:
+              _dlg.Destroy() 
+              return -1
+            
+        except IOError as _e:
+          break
+    else:
+      _path=self.ProjetPath+"\\"+self.projet["root"]["Nom du Projet"]
+    self._SaveProject(_path,self.projet)
+    self.not_saved=0
+    self.Projet2IHM(self.projet, self.frame)
+    return 0
+
 
 
 
@@ -112,15 +156,51 @@ class ProjetIMD(object):
     _dlg.Destroy()    
     
     
+  def ValiderDirFile(self,value):
+    """
+    Vérifie la présence d'un fichier
+    @param value: directory+fichier à vérifier
+    @note: http://stackoverflow.com/questions/82831/how-do-i-check-if-a-file-exists-using-python
+    """
+    try :
+      with open(value) as _f: pass
+      return 0
+    except IOError as _e:
+      dlg = wx.MessageDialog(None, "Répertoire non valide sans %s !" % value.split('\x5C')[-1] ,"Warning dans OnKillFocus_DIR_PLAST3D",wx.OK|wx.ICON_INFORMATION)
+      dlg.ShowModal()
+      dlg.Destroy() 
+      return -1
     
-"""    
-    import json
-    jj=json.dumps(project,indent=4, separators=(',', ': '),encoding="utf-8")
-    with open("toto.json",mode="w") as f:
-      f.write(jj)
+    
+  def _LoadProject(self,name,projet):
     with open("toto.json","r") as g:
       gg=g.read()
     print gg
     jj=json.loads(gg,encoding="utf-8")
     print jj
+    
+  def _SaveProject(self,fullname,projet):
+    """
+    Sauvegarde sous la forme JSON ASCII les donnée projet (dict)
+    @param fullname: nom du fichier avec son chemin
+    @param projet: projet (type dict)
+    """
+    self.projet["root"]["Nom du Projet"]=fullname.split('\x5C')[-1]
+    self.projet["root"]["Dossier du Projet"]="."+fullname.split('\x5C')[-1] 
+    _p,_=os.path.split(fullname)
+    try:
+      shutil.rmtree(os.path.join(_p,self.projet["root"]["Dossier du Projet"]))
+    except:
+      print "Error à la destruction du dossier %s ." % os.path.join(_p,self.projet["root"]["Dossier du Projet"])
+    os.mkdir(os.path.join(_p,self.projet["root"]["Dossier du Projet"]))
+
+    _p=json.dumps(projet,indent=4, separators=(',', ': '),encoding="utf-8")
+    with open(fullname,mode="w") as f:
+      f.write(_p)
+    
+    
+"""    
+
+
+
 """    
