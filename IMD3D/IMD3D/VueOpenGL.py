@@ -20,12 +20,11 @@ import wx.glcanvas
 try:
     import OpenGL.GL as gl
     import OpenGL.GLU as glu
-    import OpenGL.GLUT as glut
 except ImportError:
     raise ImportError, "Required dependency OpenGL not present"
   
 class cCamera(object):
-  def __init__(self,r=22,theta=0.44,phi=0.61,eye_view=[0.0,0.0,0.0]):
+  def __init__(self,r=100,theta=0.44,phi=0.61,eye_view=[0.0,0.0,0.0]):
     self.r=r
     self._theta=theta
     self.senstheta=1  
@@ -85,12 +84,12 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     
   def OnSize(self, event):
     size = self.size = self.GetClientSize()
-    if self.GetContext() and self.GetParent().IsShown() and not size[0]==0 and not size[1]==0: #vérifie que l'on est bien dans l'onglet visualisation 3D sinon warning wx canvas
+    if self.GetContext() and self.GrandParent.GrandParent.GetSelection()==2 and not size[0]==0 and not size[1]==0: #vérifie que l'on est bien dans l'onglet visualisation 3D sinon warning wx canvas
         self.SetCurrent()
         gl.glViewport(0, 0, size.width, size.height)
     event.Skip()
     
-  def mInitOpenGL(self,ClearColor=[0.0,0.0,0.0,1.0]):
+  def mInitOpenGL(self):
     #Active la gestion de la profondeur
     gl.glEnable(gl.GL_DEPTH_TEST)
     gl.glShadeModel (gl.GL_FLAT) #default gl.GL_SMOOTH
@@ -99,7 +98,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     gl.glLoadIdentity()
     glu.gluPerspective(65.0, 4./3., 1.0, 1000.0)
     # fixe le fond d'écran à noir
-    gl.glClearColor(*ClearColor)
+    gl.glClearColor(0.0, 0.0, 0.0, 1.0)
     # prépare à travailler sur le modèle
     # (données de l'application)
     gl.glMatrixMode(gl.GL_MODELVIEW)
@@ -120,39 +119,6 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
         self.cache_color[self.TableCouleur].append(self.RGB_tuples[int(self.N*abs((i[0][2]-self.min[2])/(self.max[2]-self.min[2]+1e-99)))-1])  
       j+=1 
    
-  
-  def mDrawAxes(self):
-    _anti_zoom=self.oCamera.r*0.1
-    gl.glPushMatrix ()
-    gl.glTranslate(0,0,0)
-    gl.glScalef(_anti_zoom,_anti_zoom,_anti_zoom)
-
-    gl.glLineWidth (2.0)
-
-    gl.glBegin (gl.GL_LINES)
-    gl.glColor3d(1,0,0) # X axis is red.
-    gl.glVertex3d(0,0,0)
-    gl.glVertex3d(1,0,0 )
-    gl.glEnd()
-    gl.glRasterPos3f(1.2, 0.0, 0.0)
-    glut.glutBitmapCharacter(glut.GLUT_BITMAP_9_BY_15, ord('x'))
-    gl.glBegin (gl.GL_LINES)
-    gl.glColor3d(0,1,0) # Y axis is green.
-    gl.glVertex3d(0,0,0)
-    gl.glVertex3d(0,1,0)
-    gl.glEnd()    
-    gl.glRasterPos3f(0.0, 1.2, 0.0)
-    glut.glutBitmapCharacter(glut.GLUT_BITMAP_9_BY_15, ord('y'))
-    gl.glBegin (gl.GL_LINES)    
-    gl.glColor3d(0,0,1); # z axis is blue.
-    gl.glVertex3d(0,0,0)
-    gl.glVertex3d(0,0,1)
-    gl.glEnd()    
-    gl.glRasterPos3f(0.0, 0.0, 1.2)
-    glut.glutBitmapCharacter(glut.GLUT_BITMAP_9_BY_15, ord('z'))
-
-    
-    gl.glPopMatrix()
   
   def mCreerDisplayList(self):
     """
@@ -233,7 +199,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     gl.glBegin(gl.GL_QUADS)    
     gl.glCallList(self.dl)
     gl.glEnd()
-    self.mDrawAxes()
+    
     #Finalement, envoi du dessin à l écran
     gl.glFlush()
     self.SwapBuffers()
@@ -280,61 +246,4 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
       self.bd=0 
     event.Skip()   
     
-class cSimpleVueOpenGL(cMainVueOpenGL):
-  def __init__(self, *args, **kwargs):
-    cMainVueOpenGL.__init__(self, *args, **kwargs)
-
-    #On redéfinie l'objet caméra pour un autre point de vue
-    self.oCamera=cCamera(r=10,theta=math.pi/2,phi=math.pi/2,eye_view=self.mean)
-  
-  def mDessine(self,event):
-    """
-    Fonction Principale pour dessiner la scéne simple "OpenGL" (redéfinition de la fonction mDessine de la class parente)
-    Cette fonction est la fonction callback de l'événement PAINT [self.Bind(wx.EVT_PAINT, self.mDessine)]
-    Fortement utiliser dans toutes l'Application elle est appelé indirectement via la fonction Refresh(True) de l'objet oVisuOpenGL
-    ATTENTION!! Chaque Ajout dans cette fonction peut ralentir l'animation OpenGL!!!
-    """    
-
-
-    #Indique que les instructions OpenGL s'adressent au contexte OpenGL courant
-    self.SetCurrent()
-    if not self.init:
-      self._mInitOpenGL()
-      self.init = True
     
-    
-    self.mCacheColor()
-    self.mCreerDisplayList()
-    
-    #initialise les données liées à la gestion de la profondeur
-    gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-    # initialise GL_MODELVIEW
-    # place le repère en (0,0,0)
-    gl.glLoadIdentity()
-
-    #On positionne la caméra
-    if self.flag_reset_view==1:
-      #cas ou l'on remet la caméra en position "moyenne" lorsque l'on clique sur le bouton Reset View (cf NoteBook)
-      self.oCamera=cCamera()
-      self.flag_reset_view=0
-    self.oCamera.mSetVue()
-    gl.glTranslate(-self.mean[0],-self.mean[1],-self.mean[2])
-    
-    gl.glEnable(gl.GL_LINE_SMOOTH)    
-    
-    
-    gl.glBegin(gl.GL_QUADS)    
-    gl.glCallList(self.dl)
-    gl.glEnd()
-    
-    #Finalement, envoi du dessin à l écran
-    gl.glFlush()
-    self.SwapBuffers()
-    pixels = gl.glReadPixels( 0,0, self.size[0],self.size[1], gl.GL_RGB, gl.GL_UNSIGNED_BYTE )
-    image_bmp = Common.scale_bitmap(wx.BitmapFromBuffer(self.size[0],self.size[1],pixels),50,50)
-    self.TopLevelParent.m_bitmap_test.SetBitmap(image_bmp)
-    event.Skip()
-    
-  def _mInitOpenGL(self):
-    self.mInitOpenGL([215.0/255.0,1.0,215.0/255.0,1.0])
-          

@@ -4,8 +4,7 @@
 Created on 27 nov. 2012
 
 @author: python4D
-@summary: Module principal pour la création du l'application et de la fenetre (frame) principale
-@version: see __version__
+
 
 '''
 ####################################################################################################################
@@ -19,7 +18,6 @@ from IMD3D_IHM import wxMainFrame
 import NoteBook
 import Timer
 import Projet,Common
-import pystl
 
 __version__='1.0A'
 
@@ -37,17 +35,11 @@ class cMainFrame(wxMainFrame):
   #Initialisation des éléments IHM
     if (NoteBook.RefreshOnListBox_vtk(self,self.oProjetIMD.projet["root"]["dir"]["plast3d"])==-1):
       print >>sys.stderr,"Erreur: Répertoire ""vtk"" de base non présent sous le dossier IMD3D."
-  #Init Visualisation 3D-vtk du cache des points et cell_data
+    #Init Visualisation 3D-vtk du cache des points et cell_data
     self.cache_liste_points={}
     self.m_choice_vtk_color.Clear()
     self.m_choice_vtk_color.Append("Z-Hauteur")
     self.m_choice_vtk_color.SetSelection(0)
-  #test
-    a=pystl.cSTL("ship.stl")
-    a.read(scale=500,fileformat='b')
-    _size,_buffer=a.raw_bitmap()
-    image_bmp = Common.scale_bitmap(wx.BitmapFromBuffer(_size[0],_size[1],_buffer),500,500)
-    self.TopLevelParent.m_bitmap_test.SetBitmap(image_bmp)
     
   #Init du directory PLAST3D-VTK (certaines propriétés IHM de la Class DirPicker ne sont pas settable via wxFormBuilder
     self.m_dirPicker_PLAST3D.SetPath(self.oProjetIMD.projet["root"]["dir"]["plast3d"])
@@ -67,15 +59,14 @@ class cMainFrame(wxMainFrame):
       sys.stdout = Common.RedirectOutput("out",self.m_textCtrl_console)
     sys.stderr = Common.RedirectOutput("err",self.m_textCtrl_console) 
     self.Show() 
-    wx.SplashScreen(wx.Bitmap("./images/splash.png"), wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT,2000, None, -1,style=wx.BORDER_NONE).Show()
+    wx.SplashScreen(wx.Bitmap("./images/image10.png"), wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT,2000, None, -1,style=wx.BORDER_NONE).Show()
   
   
   def OnClose_Frame( self, event ): 
-    wx.SplashScreen(wx.Bitmap("./images/splash.png"), wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT,2000, None, -1,style=wx.BORDER_NONE).Show()
+    wx.SplashScreen(wx.Bitmap("./images/image10.png"), wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT,2000, None, -1,style=wx.BORDER_NONE).Show()
     event.Skip()
       
 
-  def OnSplitterChanging(self,event):NoteBook.OnSplitterChanging(self,event)
     
   def OnNotebookPageChanged(self,event): NoteBook.OnNotebookPageChanged(self,event)
   def OnDirChanged_PLAST3D( self, event ): NoteBook.OnDirChanged_PLAST3D( self, event )
@@ -96,8 +87,6 @@ class cMainApp(wx.App):
   def __init__(self,debug=True):
     wx.App.__init__(self,redirect=False)
     self.oMainFrame=cMainFrame(debug=debug)
-    favicon = wx.Icon('images/icons/py4d.ico', wx.BITMAP_TYPE_ICO)
-    wx.Frame.SetIcon(self.oMainFrame, favicon)
 
 
 

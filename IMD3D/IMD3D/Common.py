@@ -7,7 +7,7 @@ Toutes ces fonctions sont "a priori" indépendants de l'IHM
 @author: Python4D/damien
 '''
 
-import os,sys,wx
+import os,sys
 
 def ListVtkFiles(chemin=r".",seek_level=2):
   """
@@ -81,13 +81,4 @@ class RedirectOutput(object):
     if self.kind=="err": sys.__stderr__.write(string)
     if self.kind=="out": sys.__stdout__.write(string)
 
-def scale_bitmap(bitmap, width, height):
-  """
-  Resize a bitmap
-  Use of wx functions
- @note: http://stackoverflow.com/questions/2504143/how-to-resize-and-draw-an-image-using-wxpython
-  """
-  image = wx.ImageFromBitmap(bitmap)
-  image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-  result = wx.BitmapFromImage(image)
-  return result          
+          

@@ -10,17 +10,7 @@ Importer un fichier STL
 
 from struct import unpack
 import os.path
-import Image
-import ImageDraw
-import Common
-import colorsys,logging,linecache,inspect
-logging.basicConfig(level=logging.DEBUG,
-                  format=('%(filename)s: '    
-                          '%(levelname)s: '
-                          '%(funcName)s(): '
-                          '%(lineno)d:\t'
-                          '%(message)s')
-                  )
+
 class cSTL(object):
   """
   Class cSTL utilisé pour extraire les faces d'un fichier STL
@@ -29,8 +19,6 @@ class cSTL(object):
   """
   def __init__(self,filename):
     self.set_filename(filename)
-    self.faces=[]
-    self.MeanCoord,self.MaxCoord,self.MinCoord=[0,0,0],[0,0,0],[0,0,0]
   def set_filename(self, filename):
     if not os.path.isfile(filename):
       print u"Création de l'objet cSTL impossivle >> Error: file %s not found."%filename
@@ -38,9 +26,12 @@ class cSTL(object):
     else:
       self._filename = filename
     
+  ######################################################
+  # Read STL Triangle Format
+  ######################################################
+  
   def read(self,fileformat='a',scale=1):
-    """
-    lecture et extraction des data du fichier STL, Triangle Format
+    """lecture et extraction des data du fichier STL
     @param fileformat: 'b' pour un fichier binaire STL sinon traité comme un ASCII
     @param scale: facteur multipliant pour les faces trouvées
     @return faces: "list" des faces trouvées [[(x1,y1,z1),(x2,y2,z2),(x3,y3,z3)],...,[(xn,yn,zn),(xn+1,yn+1,zn+1),(xn+2,yn+2,zn+2)]]
@@ -126,44 +117,5 @@ class cSTL(object):
           faces.append([(v1_x*scale, v1_y*scale, v1_z*scale), (v2_x*scale, v2_y*scale, v2_z*scale), (v3_x*scale, v3_y*scale, v3_z*scale)])
   
       _file.close()
-    if faces:
-      self.faces=faces
-      self.MeanCoord,self.MaxCoord,self.MinCoord=Common.MeanMaxMin(faces)
-      return(faces)
-    else:
-      logging.error("Le fichier %s ne semble pas contenir de données ou ce n'est pas un fichier de type:%s" % (self._filename,fileformat))
-      return-1
-  
-  def raw_bitmap(self,show=False):
-    """
-    Permet de créer une image 2D (données RGB) des données issues du STL par la méthode read
-    @param show: permet de visualiser l'image BitMap
-    @return: renvoi 2+3*LxH données de l'image => (Largeur,Hauteur) et données RGB (3*LxH) 
-    """
-    if self.faces:
-      _bords=10
-      _imgsize=(int(self.MaxCoord[0]-self.MinCoord[0])+_bords*2, int(self.MaxCoord[1]-self.MinCoord[1])+_bords*2)
-      _img = Image.new("RGB", _imgsize)
-      _draw = ImageDraw.Draw(_img)
-      for _i in self.faces:
-        _s1,_s2,_s3=(_i[0][0]-self.MinCoord[0]+_bords,_i[0][1]-self.MinCoord[1]+_bords),\
-                       (_i[1][0]-self.MinCoord[0]+_bords,_i[1][1]-self.MinCoord[1]+_bords),\
-                       (_i[2][0]-self.MinCoord[0]+_bords,_i[2][1]-self.MinCoord[1]+_bords)
-        _c=3*[int(255*float(_i[2][2]-self.MinCoord[2])/float(self.MaxCoord[2]-self.MinCoord[2]))]
-        _c=colorsys.hsv_to_rgb(float(_i[2][2]-self.MinCoord[2])/float(self.MaxCoord[2]-self.MinCoord[2]),0.5,0.5)
-        _color=tuple([int(255*_cc) for _cc in _c])
-        _draw.polygon([_s1,_s2,_s3],fill=_color)
-      if show: _img.show()
-      return (_imgsize,_img.tostring())
-      
-    else:
-      logging.warning("Pas de données STL: utiliser la méthode read avant de créer des données Bitmap du STL")
-      #assert self.faces,"Pas de données STL: utiliser la méthode read avant de créer des données Bitmap du STL"
-      return -1
-
-if __name__=="__main__":
-  a=cSTL("../ship.stl")
-  a.read(scale=100,fileformat='b')
-  data=a.raw_bitmap(True)
-
     
+    return(faces)

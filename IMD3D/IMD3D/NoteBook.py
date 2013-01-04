@@ -28,7 +28,7 @@ def OnListBox_vtk(self, event):
     #permet juste de lancer en parralléle des taches pour ne pas 'trop' bloqué l'IHM
     from threading import Thread as Process
    
-  _filein=str(event.String.split(" from ")[1]+"\\"+event.String.split(" from ")[0])
+  _filein=str(event.String.split(" -> ")[1])
   if (_filein in self.cache_liste_points):
     self.oVueOpenGL.q.put([self.cache_liste_points[_filein],1,"no_file"])#on prévient que les données viennent du cache
   else:  
@@ -45,7 +45,7 @@ def RefreshOnListBox_vtk(self,chemin='.'):
   # Init ListBox_vtk
   list_fichiers_vtk=Common.ListVtkFiles(chemin)
   if not list_fichiers_vtk==-1:
-    self.m_listBox_vtk.Set([a.split('\\')[-1]+" from "+"\\".join(a.split('\\')[:-1]) for a in list_fichiers_vtk])
+    self.m_listBox_vtk.Set([a.split('\\')[-1]+" -> "+a for a in list_fichiers_vtk])
     self.cache_liste_points={}
     return 0
   else:
@@ -106,14 +106,3 @@ def OnChoice_vtk_color(self, event):
   self.oVueOpenGL.Refresh(True)
   event.Skip()
 
-
-
-#
-# Fonction concernant les splitters
-#
-def OnSplitterChanging(self,event):
-  """
-  Redessine le Frame car il semble que le Splitter ne le demande pas (tout le temps??)
-  """
-  self.Refresh(True)
-  event.Skip()
