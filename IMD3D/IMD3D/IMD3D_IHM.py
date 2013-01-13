@@ -165,18 +165,48 @@ class wxMainFrame ( wx.Frame ):
 		self.m_panel10 = wx.Panel( self.m_splitter2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer3 = wx.BoxSizer( wx.VERTICAL )
 		
+		bSizer19 = wx.BoxSizer( wx.VERTICAL )
+		
 		self.m_staticText2 = wx.StaticText( self.m_panel10, wx.ID_ANY, u"Fichiers VTK", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
 		self.m_staticText2.Wrap( -1 )
-		bSizer3.Add( self.m_staticText2, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND, 5 )
+		bSizer19.Add( self.m_staticText2, 0, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND, 5 )
 		
 		m_listBox_vtkChoices = [ u"test", u"de", u"la liste" ]
 		self.m_listBox_vtk = wx.ListBox( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.Size( -1,-1 ), m_listBox_vtkChoices, wx.LB_HSCROLL|wx.VSCROLL )
 		self.m_listBox_vtk.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_MENU ) )
 		
-		bSizer3.Add( self.m_listBox_vtk, 1, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND, 5 )
+		bSizer19.Add( self.m_listBox_vtk, 1, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.EXPAND, 5 )
 		
 		self.m_gauge_vtk = wx.Gauge( self.m_panel10, wx.ID_ANY, 100, wx.DefaultPosition, wx.Size( -1,-1 ), wx.GA_HORIZONTAL )
-		bSizer3.Add( self.m_gauge_vtk, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 5 )
+		bSizer19.Add( self.m_gauge_vtk, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 5 )
+		
+		bSizer3.Add( bSizer19, 1, wx.EXPAND, 5 )
+		
+		self.m_staticline7 = wx.StaticLine( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		bSizer3.Add( self.m_staticline7, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		bSizer20 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer18 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		m_choice_textureChoices = [ u"splash.png", u"Mire_R.bmp", u"logo_transparent.png" ]
+		self.m_choice_texture = wx.Choice( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_choice_textureChoices, 0 )
+		self.m_choice_texture.SetSelection( 2 )
+		bSizer18.Add( self.m_choice_texture, 1, wx.ALL, 5 )
+		
+		bSizer20.Add( bSizer18, 1, wx.EXPAND, 5 )
+		
+		bSizer21 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_slider_texture = wx.Slider( self.m_panel10, wx.ID_ANY, 50, 1, 1000, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL )
+		bSizer21.Add( self.m_slider_texture, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		self.m_checkBox_texture = wx.CheckBox( self.m_panel10, wx.ID_ANY, u"Texture", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer21.Add( self.m_checkBox_texture, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		bSizer20.Add( bSizer21, 0, wx.EXPAND, 5 )
+		
+		bSizer3.Add( bSizer20, 0, wx.EXPAND, 5 )
 		
 		self.m_panel10.SetSizer( bSizer3 )
 		self.m_panel10.Layout()
@@ -367,6 +397,9 @@ class wxMainFrame ( wx.Frame ):
 		self.m_splitter3.Bind( wx.EVT_SPLITTER_SASH_POS_CHANGED, self.OnSplitterChanging )
 		self.m_splitter2.Bind( wx.EVT_SPLITTER_SASH_POS_CHANGED, self.OnSplitterChanging )
 		self.m_listBox_vtk.Bind( wx.EVT_LISTBOX, self.OnListBox_vtk )
+		self.m_choice_texture.Bind( wx.EVT_CHOICE, self.OnChoice_texture )
+		self.m_slider_texture.Bind( wx.EVT_SCROLL, self.OnScroll_slider_texture )
+		self.m_checkBox_texture.Bind( wx.EVT_CHECKBOX, self.OnCheckBox_texture )
 		self.m_slider_vtk.Bind( wx.EVT_SCROLL, self.OnScroll_slider_vtk )
 		self.m_slider_vtk_color.Bind( wx.EVT_SCROLL, self.OnScroll_slider_vtk_color )
 		self.m_choice_vtk_color.Bind( wx.EVT_CHOICE, self.OnChoice_vtk_color )
@@ -396,6 +429,15 @@ class wxMainFrame ( wx.Frame ):
 	
 	
 	def OnListBox_vtk( self, event ):
+		event.Skip()
+	
+	def OnChoice_texture( self, event ):
+		event.Skip()
+	
+	def OnScroll_slider_texture( self, event ):
+		event.Skip()
+	
+	def OnCheckBox_texture( self, event ):
 		event.Skip()
 	
 	def OnScroll_slider_vtk( self, event ):

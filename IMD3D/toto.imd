@@ -1,0 +1,16 @@
+{
+    "root": {
+        "fichier STL moule": "",
+        "fichier vitesse.dat": "",
+        "Dossier du Projet": ".toto.imd",
+        "fichier thermique.dat": "",
+        "fichier plast.dat": "",
+        "fichier STL film": "",
+        "Nom du Projet": "toto.imd",
+        "dir": {
+            "plast3d": ".\\plast3d",
+            "anna": ""
+        }
+    },
+    "Version des fichiers projet": "1.0A"
+}

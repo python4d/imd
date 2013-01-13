@@ -25,11 +25,12 @@ except ImportError:
     raise ImportError, "Required dependency OpenGL not present"
   
 class cCamera(object):
-  def __init__(self,r=22,theta=0.44,phi=0.61,eye_view=[0.0,0.0,0.0]):
+  def __init__(self,r=22,theta=0.44,phi=0.61,xy=[0.0,0.0],eye_view=[0.0,0.0,0.0]):
     self.r=r
     self._theta=theta
     self.senstheta=1  
     self.phi=phi
+    self.xy=xy
     self.eye_view=eye_view
 
   @property
@@ -41,7 +42,7 @@ class cCamera(object):
 
     
   def mSetVue(self):
-      glu.gluLookAt(self.r,  0.0, 0.0,0.0, 0.0,0.0,0.0, 0.0, 1.0)
+      glu.gluLookAt(self.r,0.0,0.0,  0.0,self.xy[0],self.xy[1],  0.0, 0.0, 1.0)
       gl.glRotated(self.theta*180/math.pi, 0.0,1.0,0.0)
       gl.glRotated(+self.phi*180/math.pi, 0.0,0.0,1.0)
 
@@ -58,7 +59,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     self.Bind(wx.EVT_MOUSE_EVENTS, self.mEvenementSouris)
     
     self._frame=self.TopLevelParent
-    self.bd=0
+    self.lbd,self.rbd=(0,0)
     self.flag_reset_view=0
     self.flag_new_set_of_points=0
     self.x,self.y=0,0
@@ -81,8 +82,16 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     self.TableCouleur="Z-Hauteur"
     self.cache_color={}
     self.mCacheColor()
-
     
+    #flag concernant la texture:
+    #  0 pas de changement
+    # -1 texture devient inactif
+    #  1 texture devient actif
+    #  2 changement de texture
+    #  3 changement de taille
+    #cf Notebook
+    self.flag_texture_change=0
+       
   def OnSize(self, event):
     size = self.size = self.GetClientSize()
     if self.GetContext() and self.GetParent().IsShown() and not size[0]==0 and not size[1]==0: #vérifie que l'on est bien dans l'onglet visualisation 3D sinon warning wx canvas
@@ -93,11 +102,32 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
   def mInitOpenGL(self,ClearColor=[0.0,0.0,0.0,1.0]):
     #Active la gestion de la profondeur
     gl.glEnable(gl.GL_DEPTH_TEST)
-    gl.glShadeModel (gl.GL_FLAT) #default gl.GL_SMOOTH
+    gl.glShadeModel (gl.GL_SMOOTH) #default gl.GL_SMOOTH (gl.GL_FLAT)
     # Fixe la perspective
     gl.glMatrixMode(gl.GL_PROJECTION)
     gl.glLoadIdentity()
     glu.gluPerspective(65.0, 4./3., 1.0, 1000.0)
+    gl.glEnable(gl.GL_NORMALIZE)
+    
+    # Travail sur les lumières
+    gl.glEnable(gl.GL_COLOR_MATERIAL)
+    gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_SPECULAR, (0.2,0.2,0.2, 1))
+    gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_DIFFUSE, (1,1,1, 1))
+    #gl.glMaterialfv(gl.GL_FRONT_AND_BACK, gl.GL_SHININESS, 100.0)
+    gl.glLight(gl.GL_LIGHT0,gl.GL_DIFFUSE,(1,1,1,1))
+    gl.glLight(gl.GL_LIGHT0,gl.GL_SPECULAR,(1,1,1,1))   
+    gl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, (0,0,1000,1))
+    gl.glLight(gl.GL_LIGHT1,gl.GL_DIFFUSE,(1,1,1,1))
+    gl.glLight(gl.GL_LIGHT1,gl.GL_SPECULAR,(1,1,1,1))    
+    gl.glLight(gl.GL_LIGHT1, gl.GL_POSITION, (0,0,-1000,1))
+    gl.glEnable(gl.GL_LIGHTING)
+    gl.glEnable(gl.GL_LIGHT0)
+    gl.glEnable(gl.GL_LIGHT1)
+    
+    #Initialiser la Texture sans l'activer...
+    TextureBitmap(image=r"./images/"+self._frame.m_choice_texture.LabelText,size=(10.0/float(self._frame.m_slider_texture.GetValue())))
+
+    
     # fixe le fond d'écran à noir
     gl.glClearColor(*ClearColor)
     # prépare à travailler sur le modèle
@@ -105,6 +135,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     gl.glMatrixMode(gl.GL_MODELVIEW)
     #On crée la display list
     self.mCreerDisplayList()
+
     
   def OnEraseBackground(self, event):
         pass # Do nothing, to avoid flashing on MSW.
@@ -123,7 +154,13 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
   
   def mDrawAxes(self):
     _anti_zoom=self.oCamera.r*0.1
-    gl.glPushMatrix ()
+    _flag_texture=gl.glIsEnabled(gl.GL_TEXTURE_2D)
+    gl.glDisable(gl.GL_TEXTURE_2D)  
+    gl.glDisable(gl.GL_DEPTH_TEST)
+    gl.glDisable(gl.GL_COLOR_MATERIAL)
+    gl.glDisable(gl.GL_LIGHTING)
+    
+    gl.glPushMatrix ()    
     gl.glTranslate(0,0,0)
     gl.glScalef(_anti_zoom,_anti_zoom,_anti_zoom)
 
@@ -150,9 +187,13 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     gl.glEnd()    
     gl.glRasterPos3f(0.0, 0.0, 1.2)
     glut.glutBitmapCharacter(glut.GLUT_BITMAP_9_BY_15, ord('z'))
-
+    gl.glPopMatrix()   
     
-    gl.glPopMatrix()
+    if _flag_texture==True: gl.glEnable(gl.GL_TEXTURE_2D)
+    gl.glEnable(gl.GL_DEPTH_TEST)
+    gl.glEnable(gl.GL_COLOR_MATERIAL)
+    gl.glEnable(gl.GL_LIGHTING)
+
   
   def mCreerDisplayList(self):
     """
@@ -164,10 +205,26 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     gl.glNewList(self.dl,gl.GL_COMPILE)
     ################################ Création de l'objet
     j=0
+    #_c1,_c2,_c3,_c4=Common.FindCorners(self.points)
+    #flag1,flag2,flag3,flag4=0,0,0,0
     for i in self.points:
       gl.glColor3d(*self.cache_color[self.TableCouleur][j])
       # Boucle sur les différents sommet de l'élément (QUAD ou TRI à afficher)
       for k in i:
+        #=======================================================================
+        # if (k[0],k[1])==_c1 and flag1==0:
+        #  gl.glTexCoord2f(1.0, 0.0)
+        #  flag1=1
+        # if (k[0],k[1])==_c2 and flag2==0:
+        #  gl.glTexCoord2f(0.0, 0.0)
+        #  flag2=1
+        # if (k[0],k[1])==_c3 and  flag3==0:
+        #  gl.glTexCoord2f(1.0, 1.0)
+        #  flag3=1
+        # if (k[0],k[1])==_c4 and flag4==0:
+        #  gl.glTexCoord2f(0.0, 1.0)
+        #  flag4=1                            
+        #=======================================================================
         gl.glVertex3d(k[0],k[1],k[2])
       j+=1
     ################################ Création de l'objet (fin)
@@ -206,6 +263,24 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
       self.mCacheColor()
       self.flag_color_change=0
       self.mCreerDisplayList()
+    if not self.flag_texture_change==0:
+      #Cas d'un changement dans les paramêtres GUI de la texture
+      #  0 pas de changement
+      # -1 texture devient inactif
+      #  1 texture devient actif
+      #  2 changement de texture
+      #  3 changement de taille
+      #cf Notebook
+      if self.flag_texture_change==1:
+        gl.glEnable(gl.GL_TEXTURE_2D)
+      if self.flag_texture_change==-1:
+        gl.glDisable(gl.GL_TEXTURE_2D)   
+      if self.flag_texture_change==2:    
+        TextureBitmap(image=r"./images/"+self._frame.m_choice_texture.LabelText,size=(10.0/float(self._frame.m_slider_texture.GetValue())))
+      if self.flag_texture_change==3:
+        gl.glTexGendv(gl.GL_S,gl.GL_OBJECT_PLANE,(10.0/float(self._frame.m_slider_texture.GetValue()),0,0,0))
+        gl.glTexGendv(gl.GL_T,gl.GL_OBJECT_PLANE,(0,10.0/float(self._frame.m_slider_texture.GetValue()),0,0))
+      self.flag_texture_change=0
       
     #Indique que les instructions OpenGL s'adressent au contexte OpenGL courant
     self.SetCurrent()
@@ -222,7 +297,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     #On positionne la caméra
     if self.flag_reset_view==1:
       #cas ou l'on remet la caméra en position "moyenne" lorsque l'on clique sur le bouton Reset View (cf NoteBook)
-      self.oCamera=cCamera()
+      self.oCamera=cCamera(xy=[0.0,0.0])
       self.flag_reset_view=0
     self.oCamera.mSetVue()
     gl.glTranslate(-self.mean[0],-self.mean[1],-self.mean[2])
@@ -264,29 +339,72 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
       units = amt/(-(event.GetWheelDelta())) 
       self.oCamera.r+=units*3
       self.Refresh(True)  
-    if event.ButtonDown():
-      self.bd=1
+      
+    if event.LeftDown():
+      self.lbd=1
       self.t0=self.oCamera.theta
       self.p0=self.oCamera.phi
-    if self.bd>=1:
+      
+    if event.RightDown():
+      self.rbd=1
+      self.xx0=self.oCamera.xy[0]
+      self.yy0=self.oCamera.xy[1]
+      
+    if self.lbd>=1:
       (self.x0,self.y0)=event.GetPosition()
       self.oCamera.theta=(self.t0+(self.y0-self.y)/100.0)
-      self.oCamera.phi=(self.p0+(self.x0-self.x)/100.0)
-      if True:
-        self.Refresh(True)         
+      self.oCamera.phi=(self.p0+(self.x0-self.x)/100.0)   
+      self.Refresh(True)          
+         
+    elif self.rbd>=1:
+      (self.x0,self.y0)=event.GetPosition()
+      self.oCamera.xy[1]=self.yy0+(self.y0-self.y)*self.oCamera.r/200.0
+      self.oCamera.xy[0]=self.xx0-(self.x0-self.x)*self.oCamera.r/200.0
+      self.Refresh(True)         
     else:
       (self.x,self.y)=event.GetPosition() 
+      
     if event.ButtonUp():
-      self.bd=0 
+      self.lbd=0 
+      self.rbd=0
     event.Skip()   
+
+def TextureBitmap(image=r".\images\Mire_R.bmp",size=0.1):
+  #On charge l'image texture à plaqué
+  #@note: http://www.fil.univ-lille1.fr/~aubert/p3d/Cours04.pdf
+
+  image_bmp=wx.Bitmap(image)
+  ix=image_bmp.Width
+  iy=image_bmp.Height
+  import numpy
+  image_buffer = numpy.ones((ix,iy,3), numpy.uint8)
+  image_bmp.CopyToBuffer(image_buffer)
+  image=image_buffer.data
+  ID=gl.glGenTextures(1)
+  gl.glBindTexture(gl.GL_TEXTURE_2D, ID)
+  gl.glPixelStorei(gl.GL_UNPACK_ALIGNMENT,1)
+  gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, ix, iy, 0,gl.GL_RGB, gl.GL_UNSIGNED_BYTE, image_buffer)
+  gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+  gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+  gl.glTexEnvf(gl.GL_TEXTURE_ENV, gl.GL_TEXTURE_ENV_MODE, gl.GL_DECAL)
+  gl.glTexGeni(gl.GL_S,gl.GL_TEXTURE_GEN_MODE,gl.GL_OBJECT_LINEAR)
+  gl.glEnable(gl.GL_TEXTURE_GEN_S)
+  gl.glTexGeni(gl.GL_T,gl.GL_TEXTURE_GEN_MODE,gl.GL_OBJECT_LINEAR)  
+  gl.glEnable(gl.GL_TEXTURE_GEN_T)
+  gl.glTexGendv(gl.GL_S,gl.GL_OBJECT_PLANE,(size,0,0,0))
+  gl.glTexGendv(gl.GL_T,gl.GL_OBJECT_PLANE,(0,size,0,0))
+  
+  #gl.glEnable(gl.GL_TEXTURE_2D)
     
+
 class cSimpleVueOpenGL(cMainVueOpenGL):
   def __init__(self, *args, **kwargs):
     cMainVueOpenGL.__init__(self, *args, **kwargs)
 
     #On redéfinie l'objet caméra pour un autre point de vue
     self.oCamera=cCamera(r=10,theta=math.pi/2,phi=math.pi/2,eye_view=self.mean)
-  
+    TextureBitmap()
+
   def mDessine(self,event):
     """
     Fonction Principale pour dessiner la scéne simple "OpenGL" (redéfinition de la fonction mDessine de la class parente)

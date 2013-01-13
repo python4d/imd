@@ -141,7 +141,7 @@ class cSTL(object):
     @return: renvoi 2+3*LxH données de l'image => (Largeur,Hauteur) et données RGB (3*LxH) 
     """
     if self.faces:
-      _bords=10
+      _bords=10 # Bordure noire autour de l'image
       _imgsize=(int(self.MaxCoord[0]-self.MinCoord[0])+_bords*2, int(self.MaxCoord[1]-self.MinCoord[1])+_bords*2)
       _img = Image.new("RGB", _imgsize)
       _draw = ImageDraw.Draw(_img)

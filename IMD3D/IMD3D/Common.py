@@ -42,7 +42,47 @@ def MeanMaxMin(points):
   _min=[min(list_x),min(list_y),min(list_z)]    
   return _mean,_max,_min
 
-
+def FindCorners(points):
+  """
+  Trouver 4 coins/points les plus éloignés (externes) d'une liste de triangles/quadri (points)
+  @param points: points=[[[x0,y0,z0],[x1,y1,z1],[x2,y2,z2],[x3,y3,z3]],[[x10,y10,z10],[x11,y11,z11],[x12,y12,z12]]]
+  @return: 4 tuples
+  @todo: NE PREVOIT PAS LES DOUBLONS - TOUS LES POINTS SONT DISTINCTS
+  """
+  #On récupère les listes de points sur le plan xy, remap de la liste des TRI ou QUAD
+  list_x=[item[0] for sublist in points for item in sublist]
+  list_y=[item[1] for sublist in points for item in sublist]
+  import numpy as np
+  arr=np.array([list_x,list_y])
+  print arr
+  #Recherche du coin suivant les xmin: On recherche les xmin et on prends celui qui a le ymin
+  indice_xmin=np.nonzero(arr[0,:]==arr[0,:].min())[0] 
+  indice_ymin_xmin=np.nonzero((arr[1,indice_xmin]==arr[1,indice_xmin].min()))[0]
+  indice_xmin=indice_xmin[indice_ymin_xmin]
+  print "XMIN/YMin=",indice_xmin,'\n',arr[:,indice_xmin]
+  _coin1=(arr[:,indice_xmin][0][0],arr[:,indice_xmin][1][0])  
+  #Recherche du coin suivant les ymin: On recherche les ymin et on prends celui qui a le xmax
+  indice_ymin=np.nonzero(arr[1,:]==arr[1,:].min())[0] 
+  indice_xmax_ymin=np.nonzero((arr[0,indice_ymin]==arr[0,indice_ymin].max()))[0]
+  indice_ymin=indice_ymin[indice_xmax_ymin]
+  print "YMIN/XMax=",indice_ymin , '\n',arr[:,indice_ymin]
+  _coin2=(arr[:,indice_ymin][0][0],arr[:,indice_ymin][1][0])
+  #Recherche du coin suivant les xmax: On recherche les xmax et on prends celui qui a le ymax
+  indice_xmax=np.nonzero(arr[0,:]==arr[0,:].max())[0] 
+  indice_xmax_ymax=np.nonzero((arr[1,indice_xmax]==arr[1,indice_xmax].max()))[0]
+  indice_xmax=indice_xmax[indice_xmax_ymax]
+  print "XMAX/YMax=",indice_xmax , '\n',arr[:,indice_xmax]
+  _coin3=(arr[:,indice_xmax][0][0],arr[:,indice_xmax][1][0])
+  #Recherche du coin suivant les ymax: On recherche les ymax et on prends celui qui a le xmin
+  indice_ymax=np.nonzero(arr[1,:]==arr.max(1)[1])[0] 
+  indice_ymax_xmin=np.nonzero((arr[0,indice_ymax]==arr[0,indice_ymax].min()))[0]
+  indice_ymax=indice_ymax[indice_ymax_xmin]
+  print "YMAX/XMin=",indice_ymax , '\n',arr[:,indice_ymax]                     
+  _coin4=(arr[:,indice_ymax][0][0],arr[:,indice_ymax][1][0])
+  
+  return (_coin1,_coin2,_coin3,_coin4)
+  
+  
 def RotateList(l,n):
   """
   Rotation d'une liste utiliser entre autre pour changer de couleur (VisuOpenGL)
@@ -91,3 +131,8 @@ def scale_bitmap(bitmap, width, height):
   image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
   result = wx.BitmapFromImage(image)
   return result          
+
+
+if __name__=="__main__":
+  points=[[(-1,1,0),(-1,2,0),(2,2,0),(2,1,0)],[(0,1,0),(1,1,0),(1,-1,0),(0,-1,0)],[(-1,-1,0),(-1,-2,0),(2,-2,0),(2,-1,0)]] #la lettre I
+  FindCorners(points)

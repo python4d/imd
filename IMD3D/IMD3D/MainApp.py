@@ -88,6 +88,10 @@ class cMainFrame(wxMainFrame):
   def OnButtonClick_vtk( self, event ):NoteBook.OnButtonClick_vtk( self, event )
   def OnChoice_vtk_color(self, event):NoteBook.OnChoice_vtk_color(self, event)
   
+  def OnChoice_texture( self, event ):NoteBook.OnChoice_texture( self, event )
+  def OnScroll_slider_texture( self, event ):NoteBook.OnScroll_slider_texture( self, event )
+  def OnCheckBox_texture( self, event ):NoteBook.OnCheckBox_texture( self, event )
+  
   def OnMenuSelection_Projet_New(self, event):self.oProjetIMD.OnMenuSelection_Projet_New(event)
   def OnMenuSelection_Projet_SaveAs(self, event):self.oProjetIMD.OnMenuSelection_Projet_Save(event,True)
   def OnMenuSelection_Projet_Save(self, event):self.oProjetIMD.OnMenuSelection_Projet_Save(event,False)

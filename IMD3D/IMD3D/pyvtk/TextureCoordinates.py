@@ -16,6 +16,7 @@ Pearu Peterson
 """
 
 import DataSetAttr
+import common
 
 class TextureCoordinates(DataSetAttr.DataSetAttr):
     """Holds VTK Texture Coordinates.

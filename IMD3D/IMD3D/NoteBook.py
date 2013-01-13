@@ -3,7 +3,7 @@
 '''
 Created on 2 déc. 2012
 Regroupe toutes les fonctions concernant le Panel NoteBook
-Ne sert que pour alléger le fichier MainApp
+Ce module a été créé uniquement pour alléger le fichier MainApp
 @author: Python4D
 '''
 import Common,vtk2obj,Projet
@@ -79,7 +79,7 @@ def OnSetFocus_DIR_PLAST3D( self, event ):
   event.Skip()       
 
 #
-#  Fonctions concernant les wxSlider de l'onglet visualisation vtk
+#  Fonctions concernant les wxSlider, choix couleur et reset view de l'onglet visualisation vtk
 #
 def OnScroll_slider_vtk( self, event ):      
   self.oVueOpenGL.flag_color_change=1
@@ -93,12 +93,6 @@ def OnScroll_slider_vtk_color( self, event ):
   self.oVueOpenGL.flag_color_change=1
   self.oVueOpenGL.Refresh(True)
   event.Skip()
-
-    
-  
-#
-#  Fonctions concernant la wxSlider de l'onglet visualisation vtk
-#  
 def OnChoice_vtk_color(self, event):
   self.oVueOpenGL.TableCouleur=self.m_choice_vtk_color.GetStringSelection()
   self.oVueOpenGL.mCacheColor()
@@ -106,6 +100,27 @@ def OnChoice_vtk_color(self, event):
   self.oVueOpenGL.Refresh(True)
   event.Skip()
 
+#
+#  Fonctions concernant le wxSlider et choix texture de l'onglet visualisation vtk
+#
+def OnChoice_texture( self, event ):
+  self.oVueOpenGL.flag_texture_change=2 
+  self.oVueOpenGL.Refresh(True)
+  event.Skip()
+
+     
+def OnScroll_slider_texture( self, event ):
+  self.oVueOpenGL.flag_texture_change=3
+  self.oVueOpenGL.Refresh(True)
+  event.Skip()  
+  
+def OnCheckBox_texture( self, event ):
+  if self.m_checkBox_texture.GetValue():
+    self.oVueOpenGL.flag_texture_change=1
+  else:
+    self.oVueOpenGL.flag_texture_change=-1
+  self.oVueOpenGL.Refresh(True)
+  event.Skip()
 
 
 #
