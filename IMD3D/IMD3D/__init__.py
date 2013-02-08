@@ -12,9 +12,8 @@ __license__ = "Dynamic3D copyright"
 from __version__ import __version__
 
 #Liste les fonctions visible du package IMD3D (from IMD3D import *)
-__all__=['vtk2obj','cIMD3D','get_quad_from_vtk']
+__all__=['cIMD3D']
 
-from vtk2obj import vtk2obj,get_quad_from_vtk
 from MainApp import cIMD3D
 
 

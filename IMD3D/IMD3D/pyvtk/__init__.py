@@ -15,6 +15,7 @@ NO WARRANTY IS EXPRESSED OR IMPLIED.  USE AT YOUR OWN RISK.
 $Revision: 1.12 $
 $Date: 2010-03-03 13:41:41 $
 Pearu Peterson
+@attention: BRANCH-tiny MODIFICATIONS FOR IMD3D PROJECT (c) Python4D
 """
 
 __author__ = "Pearu Peterson <pearu@cens.ioc.ee>"
@@ -31,6 +32,7 @@ __all__ = ['StructuredPoints','StructuredGrid','UnstructuredGrid',
 import types
 import os
 import common
+import logging
 
 from StructuredPoints import StructuredPoints, structured_points_fromfile
 from StructuredGrid import StructuredGrid, structured_grid_fromfile
@@ -204,8 +206,7 @@ class VtkData(common.Common):
         l = f.readline()
         fileversion = l.strip().replace(' ','').lower()
         if not fileversion == '#vtkdatafileversion2.0':
-            print 'File %s is not in VTK 2.0 format, got %s' % (filename, fileversion),
-            print ' but continuing anyway..'
+            logging.warning( 'File %s is not in VTK 2.0 format, got %s but continuing anyway...' % (filename, fileversion))
         self.header = f.readline().rstrip()
         format = f.readline().strip().lower()
         if format not in ['ascii','binary']:

@@ -8,18 +8,20 @@ Toutes ces fonctions sont "a priori" indépendants de l'IHM
 '''
 
 import os,sys,wx
+import logging
 
-def ListVtkFiles(chemin=r".",seek_level=2):
+def ListOfFiles(chemin=r".",seek_level=2,extension="vtk"):
   """
   Retourne Tous les fichiers VTK du dossier et sous dossier de niveau seek_level  désigné par chemin.
   @param seek_level: seek_level niveau des sous dossier à explorer
   @param chemin: Chemin à explorer
   """
+  
   files_list=[]
   if os.access(chemin, os.R_OK): 
     for _r,_,_f in walklevel(chemin,seek_level):
       for files in _f:
-          if files.endswith(".vtk"):
+          if files.lower().endswith("."+extension):
             files_list.append( os.path.join(_r,files))
     return files_list
   else:
@@ -41,6 +43,7 @@ def MeanMaxMin(points):
   _max=[max(list_x),max(list_y),max(list_z)]
   _min=[min(list_x),min(list_y),min(list_z)]    
   return _mean,_max,_min
+      
 
 def FindCorners(points):
   """
@@ -54,7 +57,7 @@ def FindCorners(points):
   list_y=[item[1] for sublist in points for item in sublist]
   import numpy as np
   arr=np.array([list_x,list_y])
-  print arr
+  logging.warning(arr)
   #Recherche du coin suivant les xmin: On recherche les xmin et on prends celui qui a le ymin
   indice_xmin=np.nonzero(arr[0,:]==arr[0,:].min())[0] 
   indice_ymin_xmin=np.nonzero((arr[1,indice_xmin]==arr[1,indice_xmin].min()))[0]

@@ -9,7 +9,6 @@ Mode debug ne permet pas de pour bénéficier du mulprocessing (cf MainApp.py et N
 '''
 from IMD3D import cIMD3D
 
-
 if __name__ == '__main__':
   #import pydevd;pydevd.settrace()
   AppIMD3M=cIMD3D(debug=True)

@@ -38,49 +38,65 @@ class cSTL(object):
     else:
       self._filename = filename
     
-  def read(self,fileformat='a',scale=1):
+  def read(self,fileformat='?',scale=1):
     """
     lecture et extraction des data du fichier STL, Triangle Format
     @param fileformat: 'b' pour un fichier binaire STL sinon traité comme un ASCII
     @param scale: facteur multipliant pour les faces trouvées
     @return faces: "list" des faces trouvées [[(x1,y1,z1),(x2,y2,z2),(x3,y3,z3)],...,[(xn,yn,zn),(xn+1,yn+1,zn+1),(xn+2,yn+2,zn+2)]]
     """
+    
+    if fileformat=='?':
+      #see http://stackoverflow.com/questions/7377954/how-to-detect-that-this-is-a-valid-valid-binary-stlstereolithography-file
+      _filesize=os.path.getsize(self._filename)
+      with open(self._filename,'rb') as f:
+        _=f.read(80)
+        _sizeSTL=unpack("i", f.read(4))
+      if (_sizeSTL[0]*50+84)==_filesize:
+        fileformat='b'
+      else:
+        with open(self._filename,'rb') as f:
+          if f.read(5)=="solid":
+            fileformat='a'
+          else:
+            logging.error(u"Le fichier %s ne semble pas être un fichier STL binaire ou ascii...")
+            return -1
+ 
     if (fileformat == 'b'):
       
-      _file = open(self._filename, "rb")
+      with open(self._filename,'rb') as f:
     
-      #80 Any text such as the  global g_working_dir
-      #creator's name
-      _header = unpack("<80s", _file.read(80))
-    
-      #4 int equal to the number of facets in file
-      facets = unpack("i", _file.read(4))
-    
-      #4 vertice data in the rest of the data excapt last 2 bytes
-      # Collect vert data from RAW format
-      faces = []
-      for _i in range(0, facets[0]):
-        _n_x = unpack("f", _file.read(4))
-        _n_y = unpack("f", _file.read(4))
-        _n_z = unpack("f", _file.read(4))
-        v1_x = unpack("f", _file.read(4))
-        v1_y = unpack("f", _file.read(4))
-        v1_z = unpack("f", _file.read(4))
-        v2_x = unpack("f", _file.read(4))
-        v2_y = unpack("f", _file.read(4))
-        v2_z = unpack("f", _file.read(4))
-        v3_x = unpack("f", _file.read(4))
-        v3_y = unpack("f", _file.read(4))
-        v3_z = unpack("f", _file.read(4))
-        unused = _file.read(2)
+        #80 Any text such as the  global g_working_dir
+        #creator's name
+        _header = unpack("<80s", f.read(80))
       
-        faces.append([(v1_x[0]*scale, v1_y[0]*scale, v1_z[0]*scale), (v2_x[0]*scale, v2_y[0]*scale, v2_z[0]*scale), (v3_x[0]*scale, v3_y[0]*scale, v3_z[0]*scale)])
+        #4 int equal to the number of facets in file
+        facets = unpack("i", f.read(4))
       
-      _file.close()
+        #4 vertice data in the rest of the data excapt last 2 bytes
+        # Collect vert data from RAW format
+        faces = []
+        for _i in range(0, facets[0]):
+          _n_x = unpack("f", f.read(4))
+          _n_y = unpack("f", f.read(4))
+          _n_z = unpack("f", f.read(4))
+          v1_x = unpack("f", f.read(4))
+          v1_y = unpack("f", f.read(4))
+          v1_z = unpack("f", f.read(4))
+          v2_x = unpack("f", f.read(4))
+          v2_y = unpack("f", f.read(4))
+          v2_z = unpack("f", f.read(4))
+          v3_x = unpack("f", f.read(4))
+          v3_y = unpack("f", f.read(4))
+          v3_z = unpack("f", f.read(4))
+          unused = f.read(2)
+        
+          faces.append([(v1_x[0]*scale, v1_y[0]*scale, v1_z[0]*scale), (v2_x[0]*scale, v2_y[0]*scale, v2_z[0]*scale), (v3_x[0]*scale, v3_y[0]*scale, v3_z[0]*scale)])
+
     
     else:
       
-      _file = open(self._filename, "r")
+      _file = open(self._filename,'r')
     
       faces = []
     
@@ -131,7 +147,7 @@ class cSTL(object):
       self.MeanCoord,self.MaxCoord,self.MinCoord=Common.MeanMaxMin(faces)
       return(faces)
     else:
-      logging.error("Le fichier %s ne semble pas contenir de données ou ce n'est pas un fichier de type:%s" % (self._filename,fileformat))
+      logging.error(u"Le fichier %s ne semble pas contenir de données ou ce n'est pas un fichier de type:%s" % (self._filename,fileformat))
       return-1
   
   def raw_bitmap(self,show=False):
@@ -157,9 +173,25 @@ class cSTL(object):
       return (_imgsize,_img.tostring())
       
     else:
-      logging.warning("Pas de données STL: utiliser la méthode read avant de créer des données Bitmap du STL")
+      logging.warning(u"Pas de données STL: utiliser la méthode read avant de créer des données Bitmap du STL")
       #assert self.faces,"Pas de données STL: utiliser la méthode read avant de créer des données Bitmap du STL"
       return -1
+    
+
+def get_tri_from_stl(filein,queue=0):
+  """
+  Récupère les triangles d'un stl 
+  @return: points=[[[x00,y00,z00],[x01,y01,z01],[x02,y02,z02]],[[x10,y10,z10],[x11,y11,z11],[x12,y12,z12]]]
+  @return: cell_data={} pour compatibilité avec la fonction get_quad_from_vtk
+  """
+
+  assert filein[-3:].lower()=="stl"
+  cell_data={}
+  _o=cSTL(filein)
+  faces=_o.read()
+  if not queue==0:
+    queue.put([[faces,cell_data],0,filein])#ne vient pas du cache
+  return faces,cell_data
 
 if __name__=="__main__":
   a=cSTL("../ship.stl")

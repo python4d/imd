@@ -12,6 +12,32 @@ Created on 27 nov. 2012
 # Ce package a été modifié (débuggé) et mis en sous-package d'IMD3D
 import IMD3D.pyvtk as vtk
 
+def get_tri_from_obj(filein,iNbNoeuds=0,queue=0):
+  """
+  Récupère les triangle d'un obj
+  @return: points=[[[x00,y00,z00],[x01,y01,z01],[x02,y02,z02]],[[x10,y10,z10],[x11,y11,z11],[x12,y12,z12]]]
+  @return: cell_data={} pour compatibilité avec la fonction get_quad_from_vtk
+  """
+  assert filein[-3:]=="obj"
+  vertices=[]
+  faces=[]
+  points=[]
+  cell_data={}
+  fi=open(filein,"r")
+  for i in fi.readlines():
+    try: #les lignes vides "\n" font planter le split...
+      if i.split()[0]=="v":
+        vertices.append([float(i.split()[1]),float(i.split()[2]),float(i.split()[3])])
+      if i.split()[0]=="f":
+        faces.append([int(i.split()[1]),int(i.split()[2]),int(i.split()[3])])
+    except:
+      pass
+  for f in faces:
+    points.append([vertices[f[0]-1],vertices[f[1]-1],vertices[f[2]-1]])
+  if not queue==0:
+    queue.put([[points,cell_data],0,filein])#ne vient pas du cache
+  return points,cell_data
+
 def get_quad_from_vtk(filein,iNbNoeuds=0,queue=0):
   """
   Récupère les données d'un fichier (filein) vtk, avec un nb de noeud spécifié (si iNbNoeuds=0 on prends tous les Noeuds)
@@ -87,3 +113,5 @@ def vtk2obj(filein,fileout="",iNbNoeuds=7735):
       s= 'f ' + "{:d}".format(pts[1])+' '+"{:d}".format(pts[2])+' '+"{:d}".format(pts[3])
       fo.write(s+'\n')
   fo.close()
+  
+  

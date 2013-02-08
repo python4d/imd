@@ -19,7 +19,7 @@ from floatctrl import FloatCtrl
 class wxMainFrame ( wx.Frame ):
 	
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Interface IMD3D", pos = wx.DefaultPosition, size = wx.Size( 789,600 ), style = wx.CAPTION|wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Interface IMD3D", pos = wx.DefaultPosition, size = wx.Size( 789,730 ), style = wx.CAPTION|wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 		
 		self.SetSizeHintsSz( wx.Size( 400,400 ), wx.DefaultSize )
 		
@@ -53,61 +53,73 @@ class wxMainFrame ( wx.Frame ):
 		
 		bSizer7 = wx.BoxSizer( wx.VERTICAL )
 		
+		bSizer22 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		bSizer23 = wx.BoxSizer( wx.VERTICAL )
+		
 		self.m_staticText3 = wx.StaticText( self.m_panel_Simple_OpenGL, wx.ID_ANY, u"Répertoire de l'exécutable PLAST3D (plast3d.exe) et sorties fichiers VTK", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
 		self.m_staticText3.Wrap( -1 )
 		self.m_staticText3.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
 		
-		bSizer7.Add( self.m_staticText3, 0, wx.ALL|wx.EXPAND, 5 )
+		bSizer23.Add( self.m_staticText3, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.m_dirPicker_PLAST3D = wx.DirPickerCtrl( self.m_panel_Simple_OpenGL, wx.ID_ANY, u".", u"Choisissez le directory de PLAST3D", wx.DefaultPosition, wx.DefaultSize, wx.DIRP_USE_TEXTCTRL )
-		bSizer7.Add( self.m_dirPicker_PLAST3D, 0, wx.ALL|wx.EXPAND, 5 )
+		bSizer23.Add( self.m_dirPicker_PLAST3D, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		bSizer22.Add( bSizer23, 1, wx.EXPAND, 5 )
+		
+		self.m_LaunchPlast = wx.Button( self.m_panel_Simple_OpenGL, wx.ID_ANY, u"Verification des Paramêtres\n&& \nLancement de Plast3D", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_LaunchPlast.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
+		
+		bSizer22.Add( self.m_LaunchPlast, 0, wx.ALL, 5 )
+		
+		bSizer7.Add( bSizer22, 0, wx.EXPAND, 5 )
 		
 		self.m_staticline2 = wx.StaticLine( self.m_panel_Simple_OpenGL, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
 		bSizer7.Add( self.m_staticline2, 0, wx.EXPAND |wx.ALL, 5 )
 		
+		bSizer24 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_checkBox_FichierDAT = wx.CheckBox( self.m_panel_Simple_OpenGL, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_checkBox_FichierDAT.Enable( False )
+		
+		bSizer24.Add( self.m_checkBox_FichierDAT, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		
+		self.m_staticText33 = wx.StaticText( self.m_panel_Simple_OpenGL, wx.ID_ANY, u"Utiliser un fichier DAT (optionnelle mais prioritaire !)", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
+		self.m_staticText33.Wrap( -1 )
+		self.m_staticText33.SetFont( wx.Font( 8, 74, 90, 92, False, "Times New Roman" ) )
+		
+		bSizer24.Add( self.m_staticText33, 0, wx.ALIGN_CENTER_VERTICAL, 5 )
+		
+		self.m_filePicker_FichierDAT = wx.FilePickerCtrl( self.m_panel_Simple_OpenGL, wx.ID_ANY, u"*.DAT", u"Choisissez un fichier .DAT", u"*.DAT", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_USE_TEXTCTRL )
+		self.m_filePicker_FichierDAT.SetFont( wx.Font( 5, 74, 90, 90, False, "Terminal" ) )
+		
+		bSizer24.Add( self.m_filePicker_FichierDAT, 1, wx.ALIGN_CENTER|wx.ALL, 5 )
+		
+		bSizer7.Add( bSizer24, 0, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, 5 )
+		
+		self.m_staticline9 = wx.StaticLine( self.m_panel_Simple_OpenGL, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		bSizer7.Add( self.m_staticline9, 0, wx.EXPAND |wx.ALL, 5 )
+		
 		bSizer17 = wx.BoxSizer( wx.HORIZONTAL )
 		
 		self.m_splitter3 = wx.SplitterWindow( self.m_panel_Simple_OpenGL, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
-		self.m_splitter3.SetSashGravity( 0.1 )
+		self.m_splitter3.SetSashGravity( 0.7 )
 		self.m_splitter3.Bind( wx.EVT_IDLE, self.m_splitter3OnIdle )
 		self.m_splitter3.SetMinimumPaneSize( 200 )
 		
-		self.m_panel1_Film = wx.Panel( self.m_splitter3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		bSizer13 = wx.BoxSizer( wx.VERTICAL )
-		
-		bSizer15 = wx.BoxSizer( wx.HORIZONTAL )
-		
-		self.m_staticText8 = wx.StaticText( self.m_panel1_Film, wx.ID_ANY, u"Fichier STL du Film à Utiliser", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
-		self.m_staticText8.Wrap( -1 )
-		self.m_staticText8.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
-		
-		bSizer15.Add( self.m_staticText8, 1, wx.ALIGN_CENTER|wx.ALL, 5 )
-		
-		self.m_filePicker_Film = wx.FilePickerCtrl( self.m_panel1_Film, wx.ID_ANY, u"?", u"Choisissez le fichier STL du FILM", u"*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_USE_TEXTCTRL )
-		bSizer15.Add( self.m_filePicker_Film, 1, wx.ALIGN_CENTER|wx.ALL, 5 )
-		
-		bSizer13.Add( bSizer15, 0, wx.EXPAND, 5 )
-		
-		self.oSTLFilm=ogl.cSimpleVueOpenGL(self.m_panel1_Film)
-		self.oSTLFilm.SetMinSize( wx.Size( 10,10 ) )
-		
-		bSizer13.Add( self.oSTLFilm, 10, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 5 )
-		
-		self.m_panel1_Film.SetSizer( bSizer13 )
-		self.m_panel1_Film.Layout()
-		bSizer13.Fit( self.m_panel1_Film )
 		self.m_panel_Moule = wx.Panel( self.m_splitter3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer14 = wx.BoxSizer( wx.VERTICAL )
 		
 		bSizer16 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.m_staticText9 = wx.StaticText( self.m_panel_Moule, wx.ID_ANY, u"Fichier STL du Moule à Utiliser", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
-		self.m_staticText9.Wrap( -1 )
-		self.m_staticText9.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
+		self.m_staticText_Moule = wx.StaticText( self.m_panel_Moule, wx.ID_ANY, u"STL du Moule", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
+		self.m_staticText_Moule.Wrap( -1 )
+		self.m_staticText_Moule.SetFont( wx.Font( 14, 70, 90, 92, False, wx.EmptyString ) )
 		
-		bSizer16.Add( self.m_staticText9, 1, wx.ALIGN_CENTER|wx.ALL, 5 )
+		bSizer16.Add( self.m_staticText_Moule, 1, wx.ALIGN_CENTER|wx.ALL, 5 )
 		
-		self.m_filePicker_Moule = wx.FilePickerCtrl( self.m_panel_Moule, wx.ID_ANY, u"?", u"Select a file", u"*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_USE_TEXTCTRL )
+		self.m_filePicker_Moule = wx.FilePickerCtrl( self.m_panel_Moule, wx.ID_ANY, u"*.STL", u"Sélectionnez le fichier du MOULE au format .STL", u"*.STL", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_USE_TEXTCTRL )
 		bSizer16.Add( self.m_filePicker_Moule, 1, wx.ALIGN_CENTER|wx.ALL, 5 )
 		
 		bSizer14.Add( bSizer16, 0, wx.EXPAND, 5 )
@@ -115,13 +127,91 @@ class wxMainFrame ( wx.Frame ):
 		self.oSTLMoule=ogl.cSimpleVueOpenGL(self.m_panel_Moule)
 		self.oSTLMoule.SetMinSize( wx.Size( 10,10 ) )
 		
-		bSizer14.Add( self.oSTLMoule, 10, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 5 )
+		bSizer14.Add( self.oSTLMoule, 5, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 5 )
 		
 		self.m_panel_Moule.SetSizer( bSizer14 )
 		self.m_panel_Moule.Layout()
 		bSizer14.Fit( self.m_panel_Moule )
-		self.m_splitter3.SplitVertically( self.m_panel1_Film, self.m_panel_Moule, 350 )
-		bSizer17.Add( self.m_splitter3, 10, wx.ALIGN_CENTER|wx.EXPAND, 5 )
+		self.m_panel_Film = wx.Panel( self.m_splitter3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer13 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer15 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText_Film = wx.StaticText( self.m_panel_Film, wx.ID_ANY, u"Film Automatique", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
+		self.m_staticText_Film.Wrap( -1 )
+		self.m_staticText_Film.SetFont( wx.Font( 8, 70, 90, 92, False, wx.EmptyString ) )
+		
+		bSizer15.Add( self.m_staticText_Film, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+		
+		self.m_filePicker_Film = wx.FilePickerCtrl( self.m_panel_Film, wx.ID_ANY, u"*.STL", u"Choisissez le fichier STL du FILM", u"*.STL", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_USE_TEXTCTRL )
+		self.m_filePicker_Film.Enable( False )
+		
+		bSizer15.Add( self.m_filePicker_Film, 1, wx.ALIGN_CENTER|wx.ALL, 5 )
+		
+		self.m_checkBox4 = wx.CheckBox( self.m_panel_Film, wx.ID_ANY, u"Fichier STL?", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer15.Add( self.m_checkBox4, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		bSizer13.Add( bSizer15, 0, wx.EXPAND, 5 )
+		
+		self.oSTLFilm=ogl.cSimpleVueOpenGL(self.m_panel_Film)
+		self.oSTLFilm.SetMinSize( wx.Size( 10,10 ) )
+		
+		bSizer13.Add( self.oSTLFilm, 5, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL|wx.EXPAND, 5 )
+		
+		bSizer26 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		bSizer27 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer26.Add( bSizer27, 0, wx.EXPAND, 5 )
+		
+		bSizer28 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_staticText11 = wx.StaticText( self.m_panel_Film, wx.ID_ANY, u"Dimension intérieure du cadre  >10mm  <1000mm", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText11.Wrap( -1 )
+		self.m_staticText11.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
+		
+		bSizer28.Add( self.m_staticText11, 0, wx.ALIGN_BOTTOM|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.BOTTOM, 5 )
+		
+		bSizer29 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText1111 = wx.StaticText( self.m_panel_Film, wx.ID_ANY, u"Largeur (mm)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText1111.Wrap( -1 )
+		bSizer29.Add( self.m_staticText1111, 0, wx.ALIGN_CENTER|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		
+		
+		self.m_int_largeur_cadre=IntCtrl(parent=self.m_panel_Film,id=wx.ID_ANY,value=100,min=1,max=1000)
+		bSizer29.Add( self.m_int_largeur_cadre, 1, wx.ALL, 5 )
+		
+		self.m_staticText111 = wx.StaticText( self.m_panel_Film, wx.ID_ANY, u"Hauteur (mm)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText111.Wrap( -1 )
+		bSizer29.Add( self.m_staticText111, 0, wx.ALIGN_CENTER|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		
+		
+		self.m_int_hauteur_cadre=IntCtrl(parent=self.m_panel_Film,id=wx.ID_ANY,value=100,min=10,max=100)
+		bSizer29.Add( self.m_int_hauteur_cadre, 1, wx.ALL, 5 )
+		
+		self.m_staticText1112 = wx.StaticText( self.m_panel_Film, wx.ID_ANY, u"pas (mm)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText1112.Wrap( -1 )
+		bSizer29.Add( self.m_staticText1112, 0, wx.ALIGN_CENTER|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		
+		
+		self.m_int_pas_film=IntCtrl(parent=self.m_panel_Film,id=wx.ID_ANY,value=1,min=1,max=10)
+		bSizer29.Add( self.m_int_pas_film, 1, wx.ALL, 5 )
+		
+		bSizer28.Add( bSizer29, 1, wx.EXPAND, 5 )
+		
+		bSizer26.Add( bSizer28, 1, wx.EXPAND, 5 )
+		
+		self.m_button_generer_film = wx.Button( self.m_panel_Film, wx.ID_ANY, u"Générer\nFilm", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer26.Add( self.m_button_generer_film, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		bSizer13.Add( bSizer26, 0, wx.EXPAND, 5 )
+		
+		self.m_panel_Film.SetSizer( bSizer13 )
+		self.m_panel_Film.Layout()
+		bSizer13.Fit( self.m_panel_Film )
+		self.m_splitter3.SplitVertically( self.m_panel_Moule, self.m_panel_Film, 380 )
+		bSizer17.Add( self.m_splitter3, 1, wx.ALIGN_CENTER|wx.EXPAND, 5 )
 		
 		bSizer7.Add( bSizer17, 10, wx.EXPAND, 5 )
 		
@@ -132,25 +222,192 @@ class wxMainFrame ( wx.Frame ):
 		self.m_panel_param_plast = wx.Panel( self.m_notebook_Projet, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, u"Panel des Procédés" )
 		bSizer12 = wx.BoxSizer( wx.VERTICAL )
 		
+		bSizer291 = wx.BoxSizer( wx.VERTICAL )
+		
+		gSizer2 = wx.GridSizer( 2, 2, 0, 0 )
+		
+		sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel_param_plast, wx.ID_ANY, u"Paramêtres de vitesse de simulation (#Time Control)" ), wx.VERTICAL )
+		
+		bSizer34 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer37 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText1911 = wx.StaticText( self.m_panel_param_plast, wx.ID_ANY, u"#Durée max estimé de la simulation", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText1911.Wrap( -1 )
+		bSizer37.Add( self.m_staticText1911, 0, wx.ALL, 5 )
+		
+		
+		self.m_float_tps_simulation=FloatCtrl(limited=True,parent=self.m_panel_param_plast,id=wx.ID_ANY,value=3.0,min=0.1,max=100)
+		bSizer37.Add( self.m_float_tps_simulation, 1, wx.ALL, 5 )
+		
+		bSizer34.Add( bSizer37, 1, wx.EXPAND, 5 )
+		
+		bSizer371 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText19112 = wx.StaticText( self.m_panel_param_plast, wx.ID_ANY, u"#Seuil d'immobilisme pour l'arrêt de Plast (mm)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText19112.Wrap( -1 )
+		bSizer371.Add( self.m_staticText19112, 0, wx.ALL, 5 )
+		
+		
+		self.m_float_critere_arret=FloatCtrl(limited=True,parent=self.m_panel_param_plast,id=wx.ID_ANY,value=0.1,min=0.001,max=1)
+		bSizer371.Add( self.m_float_critere_arret, 1, wx.ALL, 5 )
+		
+		bSizer34.Add( bSizer371, 1, wx.EXPAND, 5 )
+		
+		sbSizer1.Add( bSizer34, 1, wx.EXPAND|wx.SHAPED, 5 )
+		
+		gSizer2.Add( sbSizer1, 0, wx.EXPAND, 5 )
+		
+		sbSizer2 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel_param_plast, wx.ID_ANY, u"Paramêtres Moule-Film" ), wx.VERTICAL )
+		
+		bSizer30 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer38 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText15 = wx.StaticText( self.m_panel_param_plast, wx.ID_ANY, u"#Distance entre MOULE et FILM (mm)   ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText15.Wrap( -1 )
+		bSizer38.Add( self.m_staticText15, 0, wx.ALL, 5 )
+		
+		
+		self.m_int_distance_moule_film=IntCtrl(parent=self.m_panel_param_plast,id=wx.ID_ANY,value=10,min=1,max=1000)
+		bSizer38.Add( self.m_int_distance_moule_film, 1, wx.ALL, 5 )
+		
+		bSizer30.Add( bSizer38, 1, wx.EXPAND, 5 )
+		
+		bSizer35 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText19 = wx.StaticText( self.m_panel_param_plast, wx.ID_ANY, u"#Vitesse de déplacement du Film vers Moule en z (mm/s)   ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText19.Wrap( -1 )
+		bSizer35.Add( self.m_staticText19, 0, wx.ALL, 5 )
+		
+		
+		self.m_float_deplacement_film=FloatCtrl(limited=True,parent=self.m_panel_param_plast,id=wx.ID_ANY,value=1,min=0.1,max=20)
+		bSizer35.Add( self.m_float_deplacement_film, 1, wx.ALL, 5 )
+		
+		bSizer30.Add( bSizer35, 1, wx.EXPAND, 5 )
+		
+		bSizer351 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText191 = wx.StaticText( self.m_panel_param_plast, wx.ID_ANY, u"#Pression/Depression Film - 'Aspiration' (?)   ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText191.Wrap( -1 )
+		bSizer351.Add( self.m_staticText191, 0, wx.ALL, 5 )
+		
+		
+		self.m_float_pression=FloatCtrl(limited=True,parent=self.m_panel_param_plast,id=wx.ID_ANY,value=100,min=-200,max=200)
+		bSizer351.Add( self.m_float_pression, 1, wx.ALL, 5 )
+		
+		bSizer30.Add( bSizer351, 1, wx.EXPAND, 5 )
+		
+		bSizer3511 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText1912 = wx.StaticText( self.m_panel_param_plast, wx.ID_ANY, u"#Coeff frottement Film - Moule (?)   ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText1912.Wrap( -1 )
+		bSizer3511.Add( self.m_staticText1912, 0, wx.ALL, 5 )
+		
+		
+		self.m_float_frottement=FloatCtrl(limited=True,parent=self.m_panel_param_plast,id=wx.ID_ANY,value=0.3,min=0,max=10)
+		bSizer3511.Add( self.m_float_frottement, 1, wx.ALL, 5 )
+		
+		bSizer30.Add( bSizer3511, 1, wx.EXPAND, 5 )
+		
+		sbSizer2.Add( bSizer30, 1, wx.EXPAND|wx.SHAPED, 5 )
+		
+		gSizer2.Add( sbSizer2, 0, wx.EXPAND, 5 )
+		
+		sbSizer3 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel_param_plast, wx.ID_ANY, u"Paramêtre Température Film (thermique.dat)" ), wx.VERTICAL )
+		
+		bSizer32 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer31 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText151 = wx.StaticText( self.m_panel_param_plast, wx.ID_ANY, u"#Température (°C) (création fichier .DAT)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText151.Wrap( -1 )
+		bSizer31.Add( self.m_staticText151, 0, wx.ALL, 5 )
+		
+		
+		self.m_int_temp_film=IntCtrl(parent=self.m_panel_param_plast,id=wx.ID_ANY,value=100,min=10,max=200)
+		bSizer31.Add( self.m_int_temp_film, 1, wx.ALL, 5 )
+		
+		bSizer32.Add( bSizer31, 1, wx.EXPAND, 5 )
+		
+		bSizer33 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_checkBox5 = wx.CheckBox( self.m_panel_param_plast, wx.ID_ANY, u"Utilisation d'un fichier thermique.dat", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer33.Add( self.m_checkBox5, 0, wx.ALL, 5 )
+		
+		self.m_filePicker_thermique_dat = wx.FilePickerCtrl( self.m_panel_param_plast, wx.ID_ANY, u"*.DAT", u"Choisissez le fichier thermique_dat du FILM", u"*.DAT", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_USE_TEXTCTRL )
+		self.m_filePicker_thermique_dat.Enable( False )
+		
+		bSizer33.Add( self.m_filePicker_thermique_dat, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		bSizer32.Add( bSizer33, 1, wx.EXPAND, 5 )
+		
+		sbSizer3.Add( bSizer32, 0, wx.EXPAND, 5 )
+		
+		gSizer2.Add( sbSizer3, 1, wx.EXPAND, 5 )
+		
+		sbSizer4 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel_param_plast, wx.ID_ANY, u"Sélection du Matériaux Film" ), wx.VERTICAL )
+		
+		bSizer40 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer39 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText19111 = wx.StaticText( self.m_panel_param_plast, wx.ID_ANY, u"#Epaisseur du Matériaux Film (mm)   ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText19111.Wrap( -1 )
+		bSizer39.Add( self.m_staticText19111, 0, wx.ALL, 5 )
+		
+		
+		self.m_float_epaiseur_film=FloatCtrl(limited=True,parent=self.m_panel_param_plast,id=wx.ID_ANY,value=0.1,min=0.01,max=10)
+		bSizer39.Add( self.m_float_epaiseur_film, 1, wx.ALL, 5 )
+		
+		bSizer40.Add( bSizer39, 1, wx.EXPAND, 5 )
+		
+		bSizer41 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_staticText30 = wx.StaticText( self.m_panel_param_plast, wx.ID_ANY, u"Liste des Matérieaux (cf onglet Matériaux)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText30.Wrap( -1 )
+		bSizer41.Add( self.m_staticText30, 0, wx.ALIGN_CENTER|wx.ALL|wx.EXPAND, 5 )
+		
+		m_choice3Choices = []
+		self.m_choice3 = wx.Choice( self.m_panel_param_plast, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_choice3Choices, 0 )
+		self.m_choice3.SetSelection( 0 )
+		bSizer41.Add( self.m_choice3, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		bSizer40.Add( bSizer41, 1, wx.EXPAND, 5 )
+		
+		sbSizer4.Add( bSizer40, 1, wx.EXPAND|wx.SHAPED, 5 )
+		
+		gSizer2.Add( sbSizer4, 1, wx.EXPAND, 5 )
+		
+		bSizer291.Add( gSizer2, 1, wx.EXPAND, 5 )
+		
+		bSizer12.Add( bSizer291, 1, wx.EXPAND, 5 )
+		
 		gSizer1 = wx.GridSizer( 2, 2, 0, 0 )
 		
 		
 		self.m_int_noeuds=IntCtrl(parent=self.m_panel_param_plast,id=wx.ID_ANY,value=0,min=-10,max=10)
+		self.m_int_noeuds.Hide()
+		
 		gSizer1.Add( self.m_int_noeuds, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		
 		self.m_float_noeuds=FloatCtrl(limited=True,parent=self.m_panel_param_plast,id=wx.ID_ANY,value=0,min=-9.5,max=11.10)
+		self.m_float_noeuds.Hide()
+		
 		gSizer1.Add( self.m_float_noeuds, 0, wx.ALL|wx.EXPAND, 5 )
 		
 		self.m_bitmap_test = wx.StaticBitmap( self.m_panel_param_plast, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
+		self.m_bitmap_test.Hide()
+		
 		gSizer1.Add( self.m_bitmap_test, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, 5 )
 		
-		bSizer12.Add( gSizer1, 1, wx.EXPAND, 5 )
+		bSizer12.Add( gSizer1, 0, wx.EXPAND, 5 )
 		
 		self.m_panel_param_plast.SetSizer( bSizer12 )
 		self.m_panel_param_plast.Layout()
 		bSizer12.Fit( self.m_panel_param_plast )
-		self.m_notebook_Projet.AddPage( self.m_panel_param_plast, u"Paramêtres Procédés", True )
+		self.m_notebook_Projet.AddPage( self.m_panel_param_plast, u"Paramêtres Procédés", False )
 		self.VISUALISATION_VTK = wx.Panel( self.m_notebook_Projet, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, u"Panel des Sorties VTK" )
 		self.VISUALISATION_VTK.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 90, False, wx.EmptyString ) )
 		self.VISUALISATION_VTK.SetBackgroundColour( wx.Colour( 187, 255, 187 ) )
@@ -189,20 +446,26 @@ class wxMainFrame ( wx.Frame ):
 		
 		bSizer18 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		m_choice_textureChoices = [ u"splash.png", u"Mire_R.bmp", u"logo_transparent.png" ]
-		self.m_choice_texture = wx.Choice( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_choice_textureChoices, 0 )
-		self.m_choice_texture.SetSelection( 2 )
-		bSizer18.Add( self.m_choice_texture, 1, wx.ALL, 5 )
+		self.m_checkBox_texture = wx.CheckBox( self.m_panel10, wx.ID_ANY, u"Texture", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer18.Add( self.m_checkBox_texture, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		self.m_staticline8 = wx.StaticLine( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer18.Add( self.m_staticline8, 0, wx.EXPAND |wx.ALL, 5 )
+		
+		self.m_checkBox_lines = wx.CheckBox( self.m_panel10, wx.ID_ANY, u"Only Lines", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer18.Add( self.m_checkBox_lines, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		bSizer20.Add( bSizer18, 1, wx.EXPAND, 5 )
 		
-		bSizer21 = wx.BoxSizer( wx.HORIZONTAL )
+		m_choice_textureChoices = [ u"splash.png", u"Mire_R.bmp", u"logo_transparent.png", u"mire_210x297mm_300dpi.bmp", u"lena_512x512.jpg" ]
+		self.m_choice_texture = wx.Choice( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_choice_textureChoices, 0 )
+		self.m_choice_texture.SetSelection( 0 )
+		bSizer20.Add( self.m_choice_texture, 1, wx.ALL, 5 )
 		
-		self.m_slider_texture = wx.Slider( self.m_panel10, wx.ID_ANY, 50, 1, 1000, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL )
+		bSizer21 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_slider_texture = wx.Slider( self.m_panel10, wx.ID_ANY, 200, 10, 1000, wx.DefaultPosition, wx.DefaultSize, wx.SL_BOTH|wx.SL_HORIZONTAL|wx.SL_TOP )
 		bSizer21.Add( self.m_slider_texture, 1, wx.ALL|wx.EXPAND, 5 )
-		
-		self.m_checkBox_texture = wx.CheckBox( self.m_panel10, wx.ID_ANY, u"Texture", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer21.Add( self.m_checkBox_texture, 1, wx.ALL|wx.EXPAND, 5 )
 		
 		bSizer20.Add( bSizer21, 0, wx.EXPAND, 5 )
 		
@@ -235,7 +498,7 @@ class wxMainFrame ( wx.Frame ):
 		self.m_staticText42.Wrap( -1 )
 		bSizer6.Add( self.m_staticText42, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 		
-		self.m_slider_vtk_color = wx.Slider( self.m_panel_OpenGL, wx.ID_ANY, 512, 0, 512, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL )
+		self.m_slider_vtk_color = wx.Slider( self.m_panel_OpenGL, wx.ID_ANY, 512, 1, 512, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL )
 		bSizer6.Add( self.m_slider_vtk_color, 3, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
 		self.m_staticline41 = wx.StaticLine( self.m_panel_OpenGL, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
@@ -269,7 +532,7 @@ class wxMainFrame ( wx.Frame ):
 		self.VISUALISATION_VTK.SetSizer( bSizerContentPLAST3D_visu )
 		self.VISUALISATION_VTK.Layout()
 		bSizerContentPLAST3D_visu.Fit( self.VISUALISATION_VTK )
-		self.m_notebook_Projet.AddPage( self.VISUALISATION_VTK, u"Sorties Fichiers *.vtk", False )
+		self.m_notebook_Projet.AddPage( self.VISUALISATION_VTK, u"Sorties Fichiers *.vtk", True )
 		
 		bSizer4.Add( self.m_notebook_Projet, 1, wx.EXPAND |wx.ALL, 5 )
 		
@@ -336,8 +599,10 @@ class wxMainFrame ( wx.Frame ):
 		
 		bSizer11 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.m_textCtrl_console = wx.TextCtrl( self.m_panel8, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_RICH )
-		bSizer11.Add( self.m_textCtrl_console, 1, wx.EXPAND|wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		self.m_textCtrl_console = wx.TextCtrl( self.m_panel8, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_NOHIDESEL|wx.TE_READONLY|wx.TE_RICH2 )
+		self.m_textCtrl_console.SetFont( wx.Font( 14, 70, 90, 90, False, wx.EmptyString ) )
+		
+		bSizer11.Add( self.m_textCtrl_console, 1, wx.ALL|wx.BOTTOM|wx.EXPAND, 5 )
 		
 		self.m_panel8.SetSizer( bSizer11 )
 		self.m_panel8.Layout()
@@ -347,7 +612,7 @@ class wxMainFrame ( wx.Frame ):
 		
 		self.SetSizer( bSizerAllPanel )
 		self.Layout()
-		self.m_statusBar = self.CreateStatusBar( 1, wx.ST_SIZEGRIP, wx.ID_ANY )
+		self.m_statusBar = self.CreateStatusBar( 2, wx.ST_SIZEGRIP, wx.ID_ANY )
 		self.m_menubar = wx.MenuBar( 0 )
 		self.m_menubar.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_BTNTEXT ) )
 		
@@ -391,15 +656,24 @@ class wxMainFrame ( wx.Frame ):
 		
 		# Connect Events
 		self.Bind( wx.EVT_CLOSE, self.OnClose_Frame )
+		self.Bind( wx.EVT_MIDDLE_DOWN, self.OnMiddleDown_wxMainFrame )
 		self.m_splitter1.Bind( wx.EVT_SPLITTER_SASH_POS_CHANGED, self.OnSplitterChanging )
 		self.m_notebook.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnNotebookPageChanged )
 		self.m_dirPicker_PLAST3D.Bind( wx.EVT_DIRPICKER_CHANGED, self.OnDirChanged_PLAST3D )
+		self.m_LaunchPlast.Bind( wx.EVT_BUTTON, self.OnButtonClick_LaunchPlast )
+		self.m_checkBox_FichierDAT.Bind( wx.EVT_CHECKBOX, self.OnCheckBox_FichierDAT )
+		self.m_filePicker_FichierDAT.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnFileChanges_FichierDAT )
 		self.m_splitter3.Bind( wx.EVT_SPLITTER_SASH_POS_CHANGED, self.OnSplitterChanging )
+		self.m_filePicker_Moule.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnFileChanges_STLMoule )
+		self.m_filePicker_Film.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnFileChanges_STLFilm )
+		self.m_button_generer_film.Bind( wx.EVT_BUTTON, self.OnButtonClick_m_button_generer_film )
+		self.m_filePicker_thermique_dat.Bind( wx.EVT_FILEPICKER_CHANGED, self.OnFileChanges_STLFilm )
 		self.m_splitter2.Bind( wx.EVT_SPLITTER_SASH_POS_CHANGED, self.OnSplitterChanging )
 		self.m_listBox_vtk.Bind( wx.EVT_LISTBOX, self.OnListBox_vtk )
+		self.m_checkBox_texture.Bind( wx.EVT_CHECKBOX, self.OnCheckBox_texture )
+		self.m_checkBox_lines.Bind( wx.EVT_CHECKBOX, self.OnCheckBox_lines )
 		self.m_choice_texture.Bind( wx.EVT_CHOICE, self.OnChoice_texture )
 		self.m_slider_texture.Bind( wx.EVT_SCROLL, self.OnScroll_slider_texture )
-		self.m_checkBox_texture.Bind( wx.EVT_CHECKBOX, self.OnCheckBox_texture )
 		self.m_slider_vtk.Bind( wx.EVT_SCROLL, self.OnScroll_slider_vtk )
 		self.m_slider_vtk_color.Bind( wx.EVT_SCROLL, self.OnScroll_slider_vtk_color )
 		self.m_choice_vtk_color.Bind( wx.EVT_CHOICE, self.OnChoice_vtk_color )
@@ -417,6 +691,9 @@ class wxMainFrame ( wx.Frame ):
 	def OnClose_Frame( self, event ):
 		event.Skip()
 	
+	def OnMiddleDown_wxMainFrame( self, event ):
+		event.Skip()
+	
 	def OnSplitterChanging( self, event ):
 		event.Skip()
 	
@@ -426,18 +703,40 @@ class wxMainFrame ( wx.Frame ):
 	def OnDirChanged_PLAST3D( self, event ):
 		event.Skip()
 	
+	def OnButtonClick_LaunchPlast( self, event ):
+		event.Skip()
+	
+	def OnCheckBox_FichierDAT( self, event ):
+		event.Skip()
+	
+	def OnFileChanges_FichierDAT( self, event ):
+		event.Skip()
+	
+	
+	def OnFileChanges_STLMoule( self, event ):
+		event.Skip()
+	
+	def OnFileChanges_STLFilm( self, event ):
+		event.Skip()
+	
+	def OnButtonClick_m_button_generer_film( self, event ):
+		event.Skip()
+	
 	
 	
 	def OnListBox_vtk( self, event ):
+		event.Skip()
+	
+	def OnCheckBox_texture( self, event ):
+		event.Skip()
+	
+	def OnCheckBox_lines( self, event ):
 		event.Skip()
 	
 	def OnChoice_texture( self, event ):
 		event.Skip()
 	
 	def OnScroll_slider_texture( self, event ):
-		event.Skip()
-	
-	def OnCheckBox_texture( self, event ):
 		event.Skip()
 	
 	def OnScroll_slider_vtk( self, event ):
@@ -467,7 +766,7 @@ class wxMainFrame ( wx.Frame ):
 		self.m_splitter1.Unbind( wx.EVT_IDLE )
 	
 	def m_splitter3OnIdle( self, event ):
-		self.m_splitter3.SetSashPosition( 350 )
+		self.m_splitter3.SetSashPosition( 380 )
 		self.m_splitter3.Unbind( wx.EVT_IDLE )
 	
 	def m_splitter2OnIdle( self, event ):
