@@ -107,10 +107,38 @@ class FloatValidator(wx.PyValidator):
   
         elif chr(key) in (string.digits + '-.'):
             new_text = textval[:sel_start] + chr(key) + textval[sel_to:]
-            if self.__is_valid(new_text):
+#baco start: add            
+            if new_text in '-': 
+              new_text="-1"
+              wx.CallAfter(ctrl.SetValue, new_text)
+              wx.CallAfter(ctrl.SetInsertionPoint, 1)
+              wx.CallAfter(ctrl.SetSelection, 1, len(new_text))
+            elif new_text in '.':
+              if self.__is_valid('0.0'):
+                new_text = '0.0'
+              else:
+                new_text = str(self.min)
+              wx.CallAfter(ctrl.SetValue, new_text)
+              wx.CallAfter(ctrl.SetInsertionPoint, 2)
+              wx.CallAfter(ctrl.SetSelection, 2, len(new_text))
+              
+                        
+              
+#baco end            
+            if self.__is_valid(new_text) :
                 event.Skip()
                 return
-  
+#baco start: add                 
+            else:
+              if self.__is_valid('0.0'):
+                  new_text = '0.0'
+              else:
+                  new_text = str(self.min)
+              wx.CallAfter(ctrl.SetValue, new_text)
+              wx.CallAfter(ctrl.SetInsertionPoint, 0)
+              wx.CallAfter(ctrl.SetSelection, 0, len(new_text))
+              event.Skip()
+#baco end   
         if not wx.Validator_IsSilent():
             wx.Bell()
   

@@ -9,7 +9,7 @@ Created on 27 nov. 2012
 
 '''
 ####################################################################################################################
-# pour récupérer les les infos OpenGL mis "à la main" dans dist (py2exe) cf http://www.py2exe.org/index.cgi/PyOpenGL
+# pour récupérer les  infos OpenGL mis "à la main" dans dist (py2exe) cf http://www.py2exe.org/index.cgi/PyOpenGL
 import sys
 sys.path += ['.'] 
 ####################################################################################################################
@@ -51,15 +51,15 @@ class cMainFrame(wxMainFrame):
     self.m_choice_vtk_color.Append("Z-Hauteur")
     self.m_choice_vtk_color.SetSelection(0)
   ##début du test pour chargé un STL et le transformer en BMP 2D####
-    a=pystl.cSTL("ship.stl")
-    a.read(scale=500,fileformat='b')
-    _size,_buffer=a.raw_bitmap()
-    image_bmp = Common.scale_bitmap(wx.BitmapFromBuffer(_size[0],_size[1],_buffer),500,500)
-    self.TopLevelParent.m_bitmap_test.SetBitmap(image_bmp)
+#    a=pystl.cSTL("./stl/ship.stl")
+#    a.read(scale=500,fileformat='b')
+#    _size,_buffer=a.raw_bitmap()
+#    image_bmp = Common.scale_bitmap(wx.BitmapFromBuffer(_size[0],_size[1],_buffer),500,500)
+#    self.TopLevelParent.m_bitmap_test.SetBitmap(image_bmp)
   ##fin du test  
   #Init du directory PLAST3D-VTK (certaines propriétés IHM de la Class DirPicker ne sont pas settable via wxFormBuilder
     self.m_dirPicker_PLAST3D.SetPath(self.oProjetIMD.projet["root"]["dir"]["plast3d"])
-    self.m_dirPicker_PLAST3D.GetPickerCtrl().SetLabel("Plast3D Rep.")
+    self.m_dirPicker_PLAST3D.GetPickerCtrl().SetLabel("Répertoire de l'éxécutable PLAST.EXE")
     #il est impossible de modifier le control text en READ_ONLY après sa création => self.m_dirPicker_PLAST3D.GetTextCtrl().SetDefaultStyle(wx.TE_READONLY)
     #On opte pour attacher l'événement KILL_FOCUS et SET_FOCUS afi de vérifier si le directory entré "à la main" est juste
     self.m_dirPicker_PLAST3D.GetTextCtrl().Bind( wx.EVT_KILL_FOCUS, self.OnKillFocus_DIR_PLAST3D )
@@ -75,6 +75,7 @@ class cMainFrame(wxMainFrame):
     if self.debug==True:
       sys.stdout = Common.RedirectOutput("out",self.m_textCtrl_console)
     sys.stderr = Common.RedirectOutput("err",self.m_textCtrl_console) 
+    self.Maximize()
     self.Show() 
     wx.SplashScreen(wx.Bitmap("./images/splash.png"), wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_TIMEOUT,2000, None, -1,style=wx.BORDER_NONE).Show()
   
@@ -127,6 +128,8 @@ class cMainFrame(wxMainFrame):
   def OnMenuSelection_Projet_New(self, event):self.oProjetIMD.OnMenuSelection_Projet_New(event)
   def OnMenuSelection_Projet_SaveAs(self, event):self.oProjetIMD.OnMenuSelection_Projet_Save(event,True)
   def OnMenuSelection_Projet_Save(self, event):self.oProjetIMD.OnMenuSelection_Projet_Save(event,False)
+  
+  def OnKillFocus_m_int_distance_moule_film( self,event ):  self.oNoteBook.OnKillFocus_m_int_distance_moule_film( event )
     
 class cMainApp(wx.App):
   def __init__(self,debug=True):

@@ -180,7 +180,7 @@ class cSTL(object):
 
 def get_tri_from_stl(filein,queue=0):
   """
-  Récupère les triangles d'un stl 
+  Récupère les triangles d'un stl = Utilise la Class cSTL et est compatible avec les autre fonction vtk2obj.get_tri_from_obj et get_quad_from_vtk
   @return: points=[[[x00,y00,z00],[x01,y01,z01],[x02,y02,z02]],[[x10,y10,z10],[x11,y11,z11],[x12,y12,z12]]]
   @return: cell_data={} pour compatibilité avec la fonction get_quad_from_vtk
   """

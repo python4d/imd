@@ -30,7 +30,7 @@ class cTimer(object):
     self.couleur=0
     self.oRefreshListeofVTKTimer=wx.Timer(frame)
     self.frame.Bind(wx.EVT_TIMER,self.mRefreshListeofVTKTimer,self.oRefreshListeofVTKTimer)       
-    self.oRefreshListeofVTKTimer.Start(10000)
+    self.oRefreshListeofVTKTimer.Start(60000)
          
   def m_statusBar_timer(self,event):
     """

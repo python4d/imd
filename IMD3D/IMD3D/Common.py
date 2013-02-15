@@ -10,6 +10,9 @@ Toutes ces fonctions sont "a priori" indépendants de l'IHM
 import os,sys,wx
 import logging
 
+
+#TODO:Fonction de recherche d'un contour suivant un nuage de point défini par un plan z=z0 ou les points x,y pour zmin (en espérant qu'il correspond à la base du moule)
+
 def ListOfFiles(chemin=r".",seek_level=2,extension="vtk"):
   """
   Retourne Tous les fichiers VTK du dossier et sous dossier de niveau seek_level  désigné par chemin.
@@ -57,30 +60,25 @@ def FindCorners(points):
   list_y=[item[1] for sublist in points for item in sublist]
   import numpy as np
   arr=np.array([list_x,list_y])
-  logging.warning(arr)
   #Recherche du coin suivant les xmin: On recherche les xmin et on prends celui qui a le ymin
   indice_xmin=np.nonzero(arr[0,:]==arr[0,:].min())[0] 
   indice_ymin_xmin=np.nonzero((arr[1,indice_xmin]==arr[1,indice_xmin].min()))[0]
   indice_xmin=indice_xmin[indice_ymin_xmin]
-  print "XMIN/YMin=",indice_xmin,'\n',arr[:,indice_xmin]
   _coin1=(arr[:,indice_xmin][0][0],arr[:,indice_xmin][1][0])  
   #Recherche du coin suivant les ymin: On recherche les ymin et on prends celui qui a le xmax
   indice_ymin=np.nonzero(arr[1,:]==arr[1,:].min())[0] 
   indice_xmax_ymin=np.nonzero((arr[0,indice_ymin]==arr[0,indice_ymin].max()))[0]
   indice_ymin=indice_ymin[indice_xmax_ymin]
-  print "YMIN/XMax=",indice_ymin , '\n',arr[:,indice_ymin]
   _coin2=(arr[:,indice_ymin][0][0],arr[:,indice_ymin][1][0])
   #Recherche du coin suivant les xmax: On recherche les xmax et on prends celui qui a le ymax
   indice_xmax=np.nonzero(arr[0,:]==arr[0,:].max())[0] 
   indice_xmax_ymax=np.nonzero((arr[1,indice_xmax]==arr[1,indice_xmax].max()))[0]
   indice_xmax=indice_xmax[indice_xmax_ymax]
-  print "XMAX/YMax=",indice_xmax , '\n',arr[:,indice_xmax]
   _coin3=(arr[:,indice_xmax][0][0],arr[:,indice_xmax][1][0])
   #Recherche du coin suivant les ymax: On recherche les ymax et on prends celui qui a le xmin
   indice_ymax=np.nonzero(arr[1,:]==arr.max(1)[1])[0] 
   indice_ymax_xmin=np.nonzero((arr[0,indice_ymax]==arr[0,indice_ymax].min()))[0]
-  indice_ymax=indice_ymax[indice_ymax_xmin]
-  print "YMAX/XMin=",indice_ymax , '\n',arr[:,indice_ymax]                     
+  indice_ymax=indice_ymax[indice_ymax_xmin]                
   _coin4=(arr[:,indice_ymax][0][0],arr[:,indice_ymax][1][0])
   
   return (_coin1,_coin2,_coin3,_coin4)

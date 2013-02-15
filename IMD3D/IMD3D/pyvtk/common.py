@@ -105,8 +105,9 @@ class Common:
                 break
             frame = frame.f_back
 #baco-start-replace     la sortie syserr par sysout pour ne pas creer un fichier erreur par l'executable (py2exe)       
-        #print >>sys.stderr,'%s.%s:\n\t%s'%(self.__class__.__name__,n[:-1],m)            
-        print >>sys.stdout,'%s.%s:\n\t%s'%(self.__class__.__name__,n[:-1],m)
+        #print >>sys.stderr,'%s.%s:\n\t%s'%(self.__class__.__name__,n[:-1],m)       
+        import logging     
+        logging.warning('%s.%s:\n\t%s'%(self.__class__.__name__,n[:-1],m))
 #baco-stop-replace
     def warning(self,m=''):
         self._get_trace(m)

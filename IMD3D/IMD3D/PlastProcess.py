@@ -8,6 +8,7 @@ Lien pour rediriger la sortie d'un fichier
 @author: Python4D/damien
 '''
 from send2trash import send2trash
+import shutil
 
 
 """
@@ -25,6 +26,7 @@ from threading import Thread as Process
 import logging
 import collections
 import numpy
+
 
 class PlastProcess(object):
   def __init__(self,app):
@@ -208,7 +210,10 @@ class PlastProcess(object):
     return points_film,points_moule
 
   def CreateThermique(self,nb_noeuds,temp=100.0):
-    with open("../plast3d/thermique.dat","w") as _f:
+    _ihm_temp=self.f.m_int_temp_film.GetValue()
+    #TODO: pas de controle de la température venant de l'IHM
+    temp=float(_ihm_temp)
+    with open("./plast3d/thermique.dat","w") as _f:
       _f.write("#Noeuds\n{:d}\n".format(nb_noeuds))    
       for i in range(nb_noeuds):
         _f.write("{:10d} {:10.3f}\n".format(i+1,temp))
@@ -235,6 +240,7 @@ class PlastProcess(object):
 #  1) Récupération de la liste de tous les noeuds uniques
 #  2) Re-Création des faces en utilisant uniquement les numéros des noeuds de cette liste 
 #  3) Re-Création des la liste des "degres de liberté" en utilisant uniquement les numérso des noeuds de cette liste 
+    _z=self.f.m_int_distance_moule_film.GetValue() #Distance Moule Film à intégrer
     logging.warning(">>CreateDat>>DEBUT CREATION DATA FILM")
     noeuds_data=[]
     faces_data=[] 
@@ -255,6 +261,7 @@ class PlastProcess(object):
         dol_data.append(place+1)
       except ValueError:
         pass
+    noeuds_data=(numpy.array(noeuds_data)+(0,0,_z)).tolist()
     logging.warning(">>CreateDat>>FIN CREATION DATA FILM")  
     for i in noeuds_data:     
       self.datas["#Nodes"]+="{0:10d} {2:+22.14e} {3:+22.14e} {4:+22.14e} {1:10d} \n".format(_n,1,*i)
@@ -269,11 +276,12 @@ class PlastProcess(object):
     
     for i in dol_data:
         self.datas["#Degrees of freedom"]+="{:10d} {:10d} {:10d} {:10d} \n".format(i,1,1,0)
-    self.datas["#Degrees of freedom"]=self.datas["#Degrees of freedom"][:-1]
+    self.datas["#Degrees of freedom"]=self.datas["#Degrees of freedom"][:-1] #il faut retirer le dernier retour à la ligne
        
     #Création du fichier thermique.dat indispensable pour le fonctionnement de plast
     if self.f==None or not self.f.m_checkBox_fichier_thermique.GetValue()==True:
-      self.CreateThermique(len(noeuds_data))   
+      self.CreateThermique(len(noeuds_data))  
+       
     
      
 #Données du moule : 
@@ -292,6 +300,10 @@ class PlastProcess(object):
           noeuds_data.append(noeud)
           new_face.append(len(noeuds_data)+_n-1)
       faces_data.append(new_face)
+    
+    #Modification des noeuds et des faces si un ou plisieurs noeuds ont plus de 19 segments...
+    noeuds_data,faces_data=self.VerifNbSegmentsParNoeud(noeuds_data,faces_data,_n-1,19)
+    
     logging.warning(">>CreateDat>>FIN CREATION DATA MOULE")  
     for i in noeuds_data:     
       self.datas["#Nodes"]+="{0:10d} {2:+22.14e} {3:+22.14e} {4:+22.14e} {1:10d} \n".format(_n,2,*i)
@@ -309,19 +321,114 @@ class PlastProcess(object):
     #Construction de la ligne #Generalities line 2 =  Nb noeuds total  Nb éléments total  8   Nb points limités  Nb materiaux(ou corps?)(2voir3)  0
     self.datas["#Generalities line 2"]="{:10d} {:10d} {:10d} {:10d} {:10d} {:10d} ".format(_n-1,_f-1,8,len(dol_data),2,0)
     
+    if self.f!=None: #Utilisation de données IHM en direct
+      
+    #Construction de Materials: Epaisseur et Vitesse moule dz (du .dat) = mm /pas  = V_ihm(mm/s) x T_IHM(s)/Nb_pas ou encore  dz=mm/s X durée critique (constante pour l'instant)
+      self.datas["#Materials"]=self.datas["#Materials"][0:69]+"{:+22.14e}".format(float(self.f.m_float_epaiseur_film.GetValue()))+self.datas["#Materials"][69+22:]   
+      self.datas["#Materials"]=self.datas["#Materials"][0:1432]+ "{:+22.14e}".format(float(self.f.m_float_deplacement_moule.GetValue())*float(self.f.m_float_tps_critique.GetValue()))+ self.datas["#Materials"][1432+22:]   
+    
+    #Construction de #Follower surface loads Pression/Depression/Aspiration (a priori négatif si film au dessus)
+    #N° corps(1) / coté(1ou2) / Pression(+)/depression(-)(unite?)
+    self.datas["#Follower surface loads"]="         1          1 {:+22.14e} ".format(float(self.f.m_float_pression.GetValue()))
+    
+    #Construction  #SLAVE SURFACE=FILM 
+    self.datas["#Slave surface"]="         1          1          0 \n         0  {:+22.14e} ".format(float(self.f.m_float_frottement.GetValue()))
+    
+    #Construction Nb de pas suivant le temps de simu: on touche uniquement (pour l'instant) au nb de pas premier = Tps de simu/Durée Critique 
+    self.datas["#Time control"] ="{:10d}".format(int(float(self.f.m_float_tps_simulation.GetValue())/float(self.f.m_float_tps_critique.GetValue())))+self.datas["#Time control"][10:]
+    
+    
     #TODO:Construction 'provisoire' de #Displacements et #Velocities
     self.datas["#Displacements"]="{:10d}".format(_n-1)+self.datas["#Displacements"][10:]
     self.datas["#Velocities"]="{:10d}".format(_n-1)+self.datas["#Velocities"][10:]
     
     
     logging.warning(">>CreateDat>>ECRITURE DU FICHIER DAT")     
-    with open("../plast3d/test.dat","w") as _f:
+    with open("./plast3d/test.dat","w") as _f:
       for i in self.datas.items():
         _f.write(i[0]+"\n")
         if i[1]!="": _f.write(i[1]+"\n")
-    
+    self.f.oProjetIMD.projet["root"]["fichier plast.dat"]="./plast3d/test.dat"
+    return True
         
-  def GenererFilm(self,largeur=100,hauteur=100,pas=1,z=0):
+  def SurfaceTriagle3D(self,face,noeuds):
+    """
+    @param face: [noeud1,noeud2,neud3]
+    @param noeuds: les coords de tous les noeuds ATTENTION NUMPY.ARRAY
+    @note: http://www.mathopenref.com/heronsformula.html
+    """
+    a=numpy.linalg.norm(noeuds[face[1]]-noeuds[face[0]])#segment AB et AC et BC du triangle
+    b=numpy.linalg.norm(noeuds[face[2]]-noeuds[face[0]])
+    c=numpy.linalg.norm(noeuds[face[1]]-noeuds[face[2]])
+    p=(a+b+c)/2
+    S=numpy.sqrt(p*(p-a)*(p-b)*(p-c))
+    return S
+    
+  def VerifNbSegmentsParNoeud(self,noeuds_data,faces_data,offset,critere=19):     
+    """
+    Vérification qu'il n'y pas plus de '@critere' segments partant d'un noeud
+    Modification de la liste des noeuds: 
+      -suppression des 2 autres noeuds du triangle du noeud ayant plus de @critère segments 
+      -création un nouveau noeud (barycentre des 2 noeuds supprimés)
+    Modification de la liste des faces: 
+      -supprimer les deux triangles qui appartenaient aux noeuds supprimés
+      -modifier les références des noeuds dans les faces (la liste des noeuds à changer, il manque un noeud)
+    On recommence l'ensemble de ces opération de modification tant qu'il a des noeuds avec plus de @critère segments pour un noeud
+    @param noeuds: liste des noeuds du moule
+    @param faces_data: liste des faces du moule avec référence des noeuds
+    @param offset: décalage entre les références présentes dans les faces et l'ordre des noeuds
+    @param critere: contrainte du nombre de segments qui partent de chaque noeud
+    """
+    _n=numpy.array(noeuds_data)
+    _f=numpy.array(faces_data)-offset-1
+    while True:
+      _f_histo=numpy.histogram(_f,bins=_f.max()-_f.min())
+      _noeuds_pb=[_f_histo[1][i] for i in range(len(_f_histo[0])) if _f_histo[0][i]>critere]
+      if len(_noeuds_pb)!=0:
+        logging.warning("{} noeuds avec problème(s) potentiel(s) ({} segments pour un noeuds).".format(_noeuds_pb,critere))
+        i=_noeuds_pb[0]
+        _all_faces=[_f[j] for j in range(len(_f)) if i in _f[j]] #on récupère toutes les faces du noeud qui pose problème
+        _all_surfs=map(lambda k:self.SurfaceTriagle3D(k,_n),_all_faces)# on calcule toutes les surfaces de ces faces
+        tri_min=_all_faces[_all_surfs.index(min(_all_surfs))]# on récupère la surface la plus petite
+        _noeuds_b_c=filter(lambda k:k!=i,tri_min)# on récupère les 2 autres points du triangle/face du noeud à problème
+        coords_middle=(_n[_noeuds_b_c[0]]+_n[_noeuds_b_c[1]])/2 #on calcule les coordonnées milieu de ces deux points
+        _n[_noeuds_b_c[0]]=coords_middle #on remplace les coords du  noeud b du triangle par les nouvelles coords milieu
+        _n=numpy.delete(_n,_noeuds_b_c[1],0)# on retire de la liste le noeud c
+
+        _new_f=[]
+        for l in _f:
+          if (_noeuds_b_c[0] in l) and (_noeuds_b_c[1] in l):
+            continue
+          else:
+            if (_noeuds_b_c[1] in l):
+              l[numpy.where(l==_noeuds_b_c[1])]=_noeuds_b_c[0]
+            j=0
+            for k in l:# il faut décaler toutes les références de noeuds dans les triangles
+              if k>_noeuds_b_c[1] : 
+                l[j]=l[j]-1
+              j+=1
+          _new_f.append(list(l))
+      else:
+        break
+      _f=numpy.array(_new_f)
+    _n=list(_n)
+    _f=list(_f+offset+1)#on n'oublie pas de remettre l'offset d'origine entre référence des noeuds dans les faces
+    return _n,_f
+ 
+  def quad2tri(self,points): 
+    """
+    Transforme Les points/faces QUAD en points/faces TRI (ne touche pas aux points)
+    @param points: points, "list" des faces générées en QUAD [[(x1,y1,z1),(x2,y2,z2),(x3,y3,z3),(x4,y4,z4)],...,[(xn,yn,zn),(xn+1,yn+1,zn+1),(xn+2,yn+2,zn+2),(xn+3,yn+3,zn+3)]]
+    @return: points, "list" des faces générées [[(x1,y1,z1),(x2,y2,z2),(x3,y3,z3)],...,[(x2n,y2n,z2n),(x2n+1,y2n+1,z2n+1),(x2n+2,y2n+2,z2n+2)]]
+
+    """
+    points_tri=[]
+    for face in points:
+        points_tri.append([face[0],face[1],face[3]])
+        points_tri.append([face[1],face[2],face[3]])
+    return points_tri
+
+  def GenererFilm(self,largeur=100,hauteur=100,pas=1,z=0,tri=False):
     """
     @param largeur: en mm, correspond à la largeur intérieure du cadre entourant le film (base du cadre)
     @param hauteur:  en mm, correspond à la hauteur/longueur intérieure du cadre entourant le film         
@@ -345,18 +452,49 @@ class PlastProcess(object):
           self.points_externes_film.append((x,y+pas,z))
         if x==largeur/2.0-pas and y==hauteur/2.0-pas:  
           self.points_externes_film.append((x+pas,y+pas,z))
-          
-    #le tour 
+    if tri:
+      self.points_film=(self.quad2tri(self.points_film))
+            
+    #On ne retourne que les points du film, le tour sera gérer par l'objet de la class au moment dans la génération du fichier .DAT
     return self.points_film
         
-        
+  def VerifAndLaunch(self):        
+    if self.Verif():
+      self.Launch()
+      self.MessageLog(u"Lancement de l'éxécutable PLAST avec le fichier créé %s!\n" % self.f.oProjetIMD.projet["root"]["fichier plast.dat"], "INFO")
+      return True
+    else:
+      self.MessageLog(u"La Vérification a échoué... Lancement IMPOSSIBLE de l'éxécutable PLAST !\n","ERROR")
+      return False   
    
-   
-  def VerifParamPlast(self):
-    pass
-
-   
-      
+  def Verif(self):
+    Log=u"-Vérification de l'existence des données MOULES (celles que vous visualisez actuellement)?"
+    if len(self.f.oSTLMoule.pointsSTL)<=3: # CORRESPOND AU FICHIER DE DEMARRAGE 3 FACES ou inférieur
+      self.f.oNoteBook.MessageLog(Log+u" NON \n","ERROR") 
+      return False
+    else:
+      self.f.oNoteBook.MessageLog(Log+u" OUI \n","INFO") 
+      self.points_moule=list(self.f.oSTLMoule.pointsSTL)
+    Log=u"-Vérification de l'existence des données FILM (celles que vous visualisez actuellement)?"
+    if len(self.f.oSTLFilm.pointsSTL)<=3: # CORRESPOND AU FICHIER DE DEMARRAGE 3 FACES ou inférieur
+      self.f.oNoteBook.MessageLog(Log+u" NON \n","ERROR") 
+      return False    
+    else:
+      self.f.oNoteBook.MessageLog(Log+u" OUI \n","INFO") 
+      self.points_film=list(self.f.oSTLFilm.pointsSTL)
+    Log=u"-Vérification de l'existence des noeuds externes du film?\n"
+    if self.points_externes_film==[]: 
+      self.f.oNoteBook.MessageLog(Log+u" NON (si film STL -> non géré actuellement)\n","ERROR") 
+      return False    
+    else:
+      self.f.oNoteBook.MessageLog(Log+u" OUI \n","INFO") 
+    self.f.oNoteBook.MessageLog(u"-Utilisation de l'épaisseur du Film (#Materials)={}mm\n".format(self.f.m_float_deplacement_moule.GetValue()),"INFO")
+    self.f.oNoteBook.MessageLog(u"-Utilisation de la vitesse de déplacement du moule dZ(#Materials)={}m/s \n".format(self.f.m_float_epaiseur_film.GetValue()),"INFO")
+    self.f.oNoteBook.MessageLog(u"-Utilisation de la Pression/Dépression (#Follower surface loads)={}? \n".format(self.f.m_float_pression.GetValue()),"INFO")
+    
+    self.f.oNoteBook.MessageLog(u"-Création du fichier {}... Patientez...\n".format("./plast3d/test.dat"),"INFO") 
+    return self.CreateDat("./plast3d/test.dat",self.points_film,self.points_moule)    
+    
    
    
   def SeeOut(self,p):
@@ -366,7 +504,7 @@ class PlastProcess(object):
       logging.warning(inline)
       while (self.wait_SeeErr):pass
       self.wait_SeeOut=True
-      self.app.oNoteBook.MessageLog("Line n°<%d> from PLAST>>>%s" % (i,inline),"INFO")
+      self.app.oNoteBook.MessageLog(u"Line n°<{}> from PLAST>>>{}".format(i,inline.decode('cp1252')),"INFO")
       self.wait_SeeOut=False
       i+=1
       sys.__stdout__.flush()
@@ -380,30 +518,29 @@ class PlastProcess(object):
       logging.warning(inline)
       while (self.wait_SeeOut):pass
       self.wait_SeeErr=True      
-      self.app.oNoteBook.MessageLog("Line n°<%d> from PLAST>>>%s" % (i,inline),"ERROR")
+      self.app.oNoteBook.MessageLog(u"Line n°<{}> from PLAST>>>{}".format(i,inline.decode('cp1252')),"ERROR")
       self.wait_SeeErr=False     
       i+=1
       sys.__stderr__.flush()
       if p.poll() != None:
         break
-          
-  def LaunchProcessPlast(self,_f=None):
-    if not self.ProcessPlastInProgress==None:
-      self.app.oNoteBook.MessageLog("Process PLAST déjà lancé  >>> Killez-le !","ERROR")
-    else:
-      _path=os.getcwd()
-      os.chdir(_f.oProjetIMD.projet["root"]["dir"]["plast3d"])
-      files = [f for f in os.listdir('.') if os.path.isfile(f)]
-      for i in files:
-        if i[0:3]=="GMV" or i[-3:]=="vtk":
-          send2trash(i)
-      self.ProcessPlastInProgress=subprocess.Popen("plast3d.exe",shell=False,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-      self.ProcessPlastInProgress.stdin.write(os.path.split(_f.oProjetIMD.projet["root"]["fichier plast.dat"])[1]+"\n1\n30000\n100\n")
-      Process(target=self.app.oPlastProcess.SeeOut, args=(self.ProcessPlastInProgress,)).start() #on doit créer un thread pour la lecture de sortie stdout du PIPE
-      Process(target=self.app.oPlastProcess.SeeErr, args=(self.ProcessPlastInProgress,)).start() #on doit créer un thread pour la lecture de sortie stderr du PIPE
-      os.chdir(_path)
-      return self.ProcessPlastInProgress
-  
+    
+         
+  def Launch(self):
+    _path=os.getcwd()      
+    os.chdir(self.f.oProjetIMD.projet["root"]["dir"]["plast3d"])
+    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    for i in files:
+      if i[0:3]=="GMV" or i[-3:]=="vtk":
+        send2trash(i)
+    self.f.oNoteBook.cache_liste_points={}
+    self.ProcessPlastInProgress=subprocess.Popen("plast3d.exe",shell=False,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    self.ProcessPlastInProgress.stdin.write(os.path.split(self.f.oProjetIMD.projet["root"]["fichier plast.dat"])[1]+"\n1\n30000\n100\n")
+    Process(target=self.app.oPlastProcess.SeeOut, args=(self.ProcessPlastInProgress,)).start() #on doit créer un thread pour la lecture de sortie stdout du PIPE
+    Process(target=self.app.oPlastProcess.SeeErr, args=(self.ProcessPlastInProgress,)).start() #on doit créer un thread pour la lecture de sortie stderr du PIPE
+    os.chdir(_path)
+    return self.ProcessPlastInProgress
+
 if __name__=="__main__":
   p=PlastProcess(None)
   
@@ -422,13 +559,13 @@ if __name__=="__main__":
     p.CreateDat("../plast3d/test.dat",film_t,moule_t)
     
   if state==20:#utilisation d'un STL calcul des dimensions de l'objet puis création du film
-    a=pystl.cSTL(u"C:/Users/damien/Documents/Projets/IMD3D/Plast/untitled2.stl")
+    a=pystl.cSTL(u"C:/Users/damien/Documents/Projets/IMD3D/Plast/export 3DS_moule+plan_sans epaisseur.stl")
     mouleSTL=a.read(scale=1)
     c1,c2,c3,c4=Common.FindCorners(mouleSTL)
     print c1,c2,c3,c4 #-x,-y,x,y
     largeur=c3[0]-c1[0]
     hauteur=c4[1]-c2[1]
     print largeur,hauteur
-    filmSTL=p.GenererFilm(largeur+10,hauteur+10,4,60)       
+    filmSTL=p.GenererFilm(310,200,4,56,tri=True)    
     p.CreateDat("../plast3d/test.dat",filmSTL,mouleSTL)
   

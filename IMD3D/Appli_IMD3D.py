@@ -11,6 +11,6 @@ from IMD3D import cIMD3D
 
 if __name__ == '__main__':
   #import pydevd;pydevd.settrace()
-  AppIMD3M=cIMD3D(debug=True)
-  AppIMD3M.run()
+  AppIMD3D=cIMD3D(debug=True)
+  AppIMD3D.run()
   

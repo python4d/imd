@@ -15,7 +15,7 @@ try:
     from OpenGL.platform import win32
 except AttributeError:
     pass
-import math
+import math,sys
 import logging
 logging.basicConfig()
 import wx.glcanvas
@@ -54,7 +54,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     # La saturation et valeur réglable via le Slider (utilisation d'un flag=>cf NoteBBook module)
     self.flag_color_change=0
     self.N = 512
-    HSV_tuples = [(x*0.5/self.N, 0.75, 0.75) for x in range(self.N)]
+    HSV_tuples = [(x*0.5/self.N, 0.75, 0.75) for x in range(self.N+1)]
     self.RGB_tuples = map(lambda x: colorsys.hsv_to_rgb(*x), HSV_tuples)
     # Données des couleurs ou data de chaque cell (quads) - Gestion de IHM pour le choix des couleurs
     self.cell_data,self.cd_max,self.cd_min={},{},{}
@@ -71,11 +71,12 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     self.flag_texture_change=0
     self.rz,self.ry,self.pz=(0.0,0.0,22.0)
     self.CoordTex=[0,0,0,0,0,0]
-    self.only_lines=0
+    self.only_lines=0#flag
+    self.ElementParticulier=-1# flag Demande 'F2' afficher ou un élément particulier
        
   def OnSize(self, event):
     size = self.size = self.GetClientSize()
-    if self.GetContext() and self.GetParent().IsShown() and not size[0]==0 and not size[1]==0: 
+    if self.GetContext() and self.GetParent().IsShown() and not size[0]<=0 and not size[1]<=0: 
     #vérifie que l'on est bien dans l'onglet visualisation 3D sinon on a un warning wx canvas
         self.SetCurrent()
         gl.glViewport(0, 0, size.width, size.height)
@@ -104,19 +105,19 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
       gl.glLight(gl.GL_LIGHT0,gl.GL_AMBIENT,(0,0,0,1))
       gl.glLight(gl.GL_LIGHT0,gl.GL_DIFFUSE,(1,1,1,1))
       gl.glLight(gl.GL_LIGHT0,gl.GL_SPECULAR,(1,1,1,1))   
-      gl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, (100,100,10000,1))
+      gl.glLight(gl.GL_LIGHT0, gl.GL_POSITION, (10000,10000,10000,1))
       gl.glLight(gl.GL_LIGHT1,gl.GL_AMBIENT,(0,0,0,1))
       gl.glLight(gl.GL_LIGHT1,gl.GL_DIFFUSE,(1,1,1,1))
       gl.glLight(gl.GL_LIGHT1,gl.GL_SPECULAR,(1,1,1,1))    
-      gl.glLight(gl.GL_LIGHT1, gl.GL_POSITION, (-100,-100,-10000,1))
+      gl.glLight(gl.GL_LIGHT1, gl.GL_POSITION, (-10000,-10000,10000,1))
       gl.glLight(gl.GL_LIGHT2,gl.GL_AMBIENT,(0,0,0,1))
       gl.glLight(gl.GL_LIGHT2,gl.GL_DIFFUSE,(1,1,1,1))
       gl.glLight(gl.GL_LIGHT2,gl.GL_SPECULAR,(1,1,1,1))    
-      gl.glLight(gl.GL_LIGHT2, gl.GL_POSITION, (1000,1000,100,1))
+      gl.glLight(gl.GL_LIGHT2, gl.GL_POSITION, (-10000,-10000,-10000,1))
       gl.glLight(gl.GL_LIGHT3,gl.GL_AMBIENT,(0,0,0,1))
       gl.glLight(gl.GL_LIGHT3,gl.GL_DIFFUSE,(1,1,1,1))
       gl.glLight(gl.GL_LIGHT3,gl.GL_SPECULAR,(1,1,1,1))    
-      gl.glLight(gl.GL_LIGHT3, gl.GL_POSITION, (-1000,-1000,-100,1))      
+      gl.glLight(gl.GL_LIGHT3, gl.GL_POSITION, (10000,10000,-10000,1))      
       gl.glEnable(gl.GL_LIGHT3)      
       gl.glEnable(gl.GL_LIGHT2)
       gl.glEnable(gl.GL_LIGHT1)
@@ -147,9 +148,9 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     self.cache_color[self.TableCouleur]=[]
     for i in self.points:
       if  not self.TableCouleur=="Z-Hauteur":
-        self.cache_color[self.TableCouleur].append(self.RGB_tuples[int(self.N*abs((self.cell_data[self.TableCouleur][j]-self.cd_min[self.TableCouleur])/(self.cd_max[self.TableCouleur]-self.cd_min[self.TableCouleur]+1e-99)))-1])
+        self.cache_color[self.TableCouleur].append(self.RGB_tuples[int(self.N*abs((self.cell_data[self.TableCouleur][j]-self.cd_min[self.TableCouleur])/(self.cd_max[self.TableCouleur]-self.cd_min[self.TableCouleur]+1e-99)))])
       else:
-        self.cache_color[self.TableCouleur].append(self.RGB_tuples[int(self.N*abs((i[0][2]-self.min[2])/(self.max[2]-self.min[2]+1e-99)))-1])  
+        self.cache_color[self.TableCouleur].append(self.RGB_tuples[int(self.N*abs((i[0][2]-self.min[2])/(self.max[2]-self.min[2]+1e-99)))])  
       j+=1 
    
   def mDrawFloor(self):
@@ -234,15 +235,16 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
         gl.glLineWidth (1.0)
     ################################ Création de l'objet
     j=0
-    #_c1,_c2,_c3,_c4=Common.FindCorners(self.points)
-    #flag1,flag2,flag3,flag4=0,0,0,0
-    for i in self.points:
-      gl.glColor3d(*self.cache_color[self.TableCouleur][j])
+    for i in self.points:      
+      gl.glNormal3f(float(numpy.random.ranf()),float(numpy.random.ranf()),1)    
+      if self.ElementParticulier==j:
+        gl.glColor3d(0,0,0)
+      else: 
+        gl.glColor3d(*self.cache_color[self.TableCouleur][j])
       # Boucle sur les différents sommet de l'élément (QUAD ou TRI à afficher)
       pair=0
       for k in i:
         if self.only_lines==1:      
-          #gl.glColor3d(1,1,1)            
           if pair%(len(self.points[0]))==0: 
             gl.glBegin(gl.GL_LINE_LOOP)  
           gl.glVertex3d(k[0],k[1],k[2])
@@ -250,7 +252,6 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
             gl.glEnd()
           pair+=1
         else:
-          #gl.glNormal3d(0, 0, 1)    
           gl.glVertex3d(k[0],k[1],k[2])          
           
       j+=1
@@ -297,7 +298,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
         self._frame.m_choice_vtk_color.Append(_i)
       self._frame.m_choice_vtk_color.SetSelection(0)
       self.TableCouleur="Z-Hauteur"
-      self.dl_surf,_,_,_=self.mCreerDisplayList()
+      self.dl,_,_,_=self.mCreerDisplayList()
     #Création de tuple de couleur HSV
     if not self.flag_color_change==0:
       #cas de changement de saturation/couleur (cf NoteBook.OnScroll_slider_vtk) ou
@@ -305,7 +306,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
       HSV_tuples = Common.RotateList(HSV_tuples, self._frame.m_slider_vtk_color.GetValue())
       self.RGB_tuples = map(lambda x: colorsys.hsv_to_rgb(*x), HSV_tuples)
       self.flag_color_change=0
-      self.dl_surf,_,_,_=self.mCreerDisplayList()
+      self.dl,_,_,_=self.mCreerDisplayList()
     if not self.flag_texture_change==0:
       #Cas d'un changement dans les paramêtres GUI de la texture
       #  0 pas de changement
@@ -335,7 +336,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     if not self.init:
       self.mInitOpenGL()
       #On crée les couleurs et la display list 
-      self.dl_surf,_,_,_=self.mCreerDisplayList()
+      self.dl,_,_,_=self.mCreerDisplayList()
       self.init = True
 
     #initialise les données liées à la gestion de la profondeur
@@ -362,25 +363,13 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     gl.glTranslate(self.CoordTex[0],self.CoordTex[1],0)
     gl.glMatrixMode(gl.GL_MODELVIEW)
     
-    gl.glCallList(self.dl_surf)
+    gl.glCallList(self.dl)
     self.mDrawFloor()
     self.mDrawAxes()
     
     #Finalement, envoi du dessin à l écran
     gl.glFlush()
     self.SwapBuffers()
-    event.Skip()
-    
-  def mAppuiTouche(self,event):
-    """
-    Récupération des événements claviers:
-    - F1 => Affichage d'un splash windows 30 secondes sur les possibilités des actions de la souris
-    """
-    e=event.GetKeyCode()
-    if e==wx.WXK_F1:
-      wx.SplashScreen(wx.Bitmap("./images/AideSourisIMD3D.png"), wx.SPLASH_TIMEOUT | wx.SPLASH_CENTRE_ON_PARENT,30000, self, -1,(100,100),style=wx.BORDER_DEFAULT).Show()
-      return(0)
-    self.Refresh(True)
     event.Skip()
   
   def Screen2World(self,x=None,y=None):
@@ -402,18 +391,38 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     """
     @param pos: position (tuple) dans l'espace (issu par exemple de Screen2World)
     """
-    
-    self._frame.m_statusBar.SetStatusText("Recherche du NOEUD cliqué...",1)
-    logging.warning("pos="+str(_pos))
+        
     _dist=[]
-    _noeuds=[]
-    for face in self.points:
-      for j in face:          
-        _dist.append(numpy.linalg.norm(numpy.array(j)-numpy.array(_pos)))
-        _noeuds.append(j)
-    _dist_mini=min(_dist)
-    self._frame.m_statusBar.SetStatusText("Position du noeud le plus proche:(x={1:.2f},y={2:.2f},z={3:.2f}) - Distance:{0:.2f} mm".format(_dist_mini,*_noeuds[_dist.index(_dist_mini)]),1)
+    all_coords=numpy.reshape(numpy.array(self.points),(-1,3)) #récupére toutes les coords de tous les points de toutes les faces
+    self._frame.m_statusBar.SetStatusText(u"Recherche du NOEUD cliqué... parmi {} noeuds...".format(len(all_coords)),1)    
+    repeat_pos=numpy.array([_pos]*len(all_coords))
+    _dist=(numpy.sum(numpy.square(all_coords-repeat_pos), 1)) # <remove> "numpy.sqrt": pas besoin de faire la racine carré pour trouver la distance min
     
+    _dist_mini=min(_dist)
+    logging.warning("Calcul mini-distance parmi {} distances...".format(len(all_coords)))
+    self._frame.m_statusBar.SetStatusText("Position du noeud le plus proche:(x={1:.2f},y={2:.2f},z={3:.2f}) - Distance:{0:.2f} mm".format(_dist_mini,*all_coords[int(list(numpy.nonzero(_dist==_dist_mini)[0])[0])]),1)
+ 
+  def mAppuiTouche(self,event):
+    """
+    Récupération des événements claviers:
+    - F1 => Affichage d'un splash windows 30 secondes sur les possibilités des actions de la souris
+    """
+    e=event.GetKeyCode()
+    if e==wx.WXK_F1:
+      wx.SplashScreen(wx.Bitmap("./images/AideSourisIMD3D.png"), wx.SPLASH_TIMEOUT | wx.SPLASH_CENTRE_ON_PARENT,30000, self, -1,(100,100),style=wx.BORDER_DEFAULT).Show()
+      return(0)
+    elif e==wx.WXK_F2:
+      DialogElementParticulier=wx.TextEntryDialog(self._frame,u"Entrée l'Element à mettre en évidence (-1 sinon):","Element Particulier")
+      DialogElementParticulier.ShowModal()
+      try:
+        self.ElementParticulier=int(DialogElementParticulier.GetValue())
+      except:
+        pass
+      if not self.ElementParticulier==-1:
+        self.dl,_,_,_=self.mCreerDisplayList()
+    self.Refresh(True)
+    event.Skip()
+       
   def mEvenementSouris(self,event):
     """
     Liste des évenements souris gérés:
@@ -452,9 +461,12 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
           
     if event.MiddleDown():
       #Translation Texture dans le plan XY et Affichage Status Barre du point le plus proche du click souris
-      if self.mbd==0:
-        Process(target= self.AffNoeudsfromPos, args=(self.Screen2World(),)).start()   
       
+      if self.mbd==0 :
+        if not hasattr(self,'AffNoeudsfromPosProcess') or not self.AffNoeudsfromPosProcess.isAlive():
+          self.AffNoeudsfromPosProcess=Process(target= self.AffNoeudsfromPos, args=(self.Screen2World(),))
+          self.AffNoeudsfromPosProcess.start()   
+      self.AffNoeudsfromPosFlag=1
       self.mbd=1
       self.xx0=self.CoordTex[0]*math.cos(self.rz)-self.CoordTex[1]*math.sin(self.rz)
       self.yy0=self.CoordTex[1]*math.cos(self.rz)+self.CoordTex[0]*math.sin(self.rz)
@@ -474,6 +486,7 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
       logging.warning("CoordTex="+str(self.CoordTex))
       logging.warning("Mean="+str((-self.mean[0],-self.mean[1],-self.mean[2])))
       logging.warning("SizeTex="+str(self.TexSize))
+
       self.Refresh(True)
       
     if self.lbd>=1:
@@ -519,17 +532,16 @@ class cMainVueOpenGL(wx.glcanvas.GLCanvas):
     #Remise des coordonnées y dans le sens OpenGL différent de l'écran
     image_bmp=image_bmp.Mirror(horizontally=False)
     image_bmp=image_bmp.ConvertToBitmap()
-    ix=image_bmp.Width
-    iy=image_bmp.Height
-    import numpy
-    image_buffer = numpy.ones((ix,iy,3), numpy.uint8)
+    self.ix=image_bmp.Width
+    self.iy=image_bmp.Height
+    image_buffer = numpy.ones((self.ix,self.iy,3), numpy.uint8)
     image_bmp.CopyToBuffer(image_buffer)
     image=image_buffer.data
-    ID=gl.glGenTextures(1)#récupère un ID d'objet-texture unique et libre 
-    gl.glBindTexture(gl.GL_TEXTURE_2D, ID)# annonce l'utilisation d'une texture 2D pour objet-texture ID 
+    self.TexID=gl.glGenTextures(1)#récupère un ID d'objet-texture unique et libre 
+    gl.glBindTexture(gl.GL_TEXTURE_2D, self.TexID)# annonce l'utilisation d'une texture 2D pour objet-texture ID 
                                           #(toutes les fonctions de texture s'applique désormais à cet onjet-texture ID)
     gl.glPixelStorei(gl.GL_UNPACK_ALIGNMENT,1) #préviens que les données de la texture sont brut
-    gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, ix, iy, 0,gl.GL_RGB, gl.GL_UNSIGNED_BYTE, image_buffer) #charge la texture 2D
+    gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, self.ix, self.iy, 0,gl.GL_RGB, gl.GL_UNSIGNED_BYTE, image_buffer) #charge la texture 2D
     gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
     gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
     gl.glTexParameterf(gl.GL_TEXTURE_2D,gl.GL_TEXTURE_WRAP_S,gl.GL_CLAMP_TO_BORDER_ARB )
@@ -560,6 +572,52 @@ class cSimpleVueOpenGL(cMainVueOpenGL):
     self.RESET_VIEW=(0.0,0.0,50.0)
     self._VueSTL=self.RESET_VIEW
     self._VueDAT=self.RESET_VIEW
+    self.pointsSTL=[]
+    self.pointsDAT=[]
+    self.meanDAT=[0,0,0]
+    self.other_points=[]
+    self.flag_other_points=False
+  
+  def mCreateOtherPoints(self,color=(.5 ,.5,.5),lines=True,epaisseur=3.0):
+    """
+    Permet de créer un autre objet indépendant d'une couleur uniforme/line
+    """
+
+    dl=gl.glGenLists(2)
+    gl.glNewList(dl,gl.GL_COMPILE)    
+    gl.glDisable(gl.GL_LIGHTING)
+    if not lines:
+      if len(self.other_points[0])==4:
+        gl.glBegin(gl.GL_QUADS)
+      else:
+        gl.glBegin(gl.GL_TRIANGLES)  
+    else:
+        gl.glLineWidth (epaisseur)
+    ################################ Création de l'objet
+    j=0
+    for i in self.other_points:      
+      #gl.glNormal3f(float(numpy.random.ranf()),float(numpy.random.ranf()),1)   
+      gl.glColor3d(*color)
+      # Boucle sur les différents sommet de l'élément (QUAD ou TRI à afficher)
+      pair=0
+      for k in i:
+        if lines:      
+          if pair%(len(self.other_points[0]))==0: 
+            gl.glBegin(gl.GL_LINE_LOOP)  
+          gl.glVertex3d(k[0],k[1],k[2])
+          if (pair+1)%(len(self.other_points[0]))==0:     
+            gl.glEnd()
+          pair+=1
+        else:
+          gl.glVertex3d(k[0],k[1],k[2])          
+          
+      j+=1
+    ################################ Création de l'objet (fin)
+    if not lines:
+      gl.glEnd()
+    gl.glEnable(gl.GL_LIGHTING)
+    gl.glEndList()
+    return dl
 
   def mEvenementSouris(self,event):
 
@@ -601,11 +659,18 @@ class cSimpleVueOpenGL(cMainVueOpenGL):
       self.init = True
     
     #initialise les données liées à la gestion de la profondeur
-    gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+    try:
+      gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+    except :
+      logging.warning(sys.exc_info())
+      return
     # initialise GL_MODELVIEW
     # place le repère en (0,0,0)
     gl.glLoadIdentity()
 
+    if self.flag_other_points: # y-a-t-il un autre objet à afficher (cf NoteBook)
+      self.dl2=self.mCreateOtherPoints()
+      self.flag_other_points=False
   
     if self.flag_STL and not self.flag_new_STL: #on bascule en mode STL sans changer de données
       self.flag_STL=False
@@ -651,7 +716,9 @@ class cSimpleVueOpenGL(cMainVueOpenGL):
     gl.glDisable(gl.GL_LINE_SMOOTH)    
     
     gl.glCallList(self.dl)
-
+    if hasattr(self,"dl2"):
+      gl.glCallList(self.dl2)
+    
     self.mDrawAxes()
     #Finalement, envoi du dessin à l écran
     gl.glFlush()
